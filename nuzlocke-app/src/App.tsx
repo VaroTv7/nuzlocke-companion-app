@@ -8,6 +8,7 @@ import { Pokedex } from './components/Dex/Pokedex'
 import { PokemonCard } from './components/PC/PokemonCard'
 import { EditModal } from './components/PC/EditModal'
 import { NotesWidget } from './components/Dashboard/NotesWidget'
+import { TeamAnalysis } from './components/Dashboard/TeamAnalysis'
 import { SaveSelector } from './components/Shared/SaveSelector'
 import { Plus, Swords, BookOpen, Search, Cloud, CloudOff, FileDown } from 'lucide-react'
 import type { Pokemon } from './store/useGameStore'
@@ -198,9 +199,9 @@ function App() {
               </div>
             </section>
 
-            {/* ACTIVE TEAM & NOTES */}
+            {/* TEAM & ANALYSIS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* ACTIVE TEAM DASHBOARD */}
+              {/* ACTIVE TEAM */}
               <section className="glass-card p-6 rounded-2xl border-white/10 col-span-1 lg:col-span-2">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-cyber-primary">
                   <span className="text-2xl">⚡</span> EQUIPO ACTIVO
@@ -239,9 +240,12 @@ function App() {
                 </div>
               </section>
 
-              {/* NOTES WIDGET */}
-              <NotesWidget />
+              {/* ANALYSIS INTERFACE */}
+              <TeamAnalysis team={team} />
             </div>
+
+            {/* NOTES FULL WIDTH AT BOTTOM */}
+            <NotesWidget />
           </div>
         )}
 

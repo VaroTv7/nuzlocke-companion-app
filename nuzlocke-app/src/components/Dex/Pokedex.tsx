@@ -3,27 +3,10 @@ import { fetchPokemonList, fetchPokemonSpecies, fetchMoveData } from '../../util
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Activity, Shield, Zap, Wind, User } from 'lucide-react';
-import { TYPE_CHART, TYPES } from '../../utils/typeChart';
+import { getDefensiveMatchups } from '../../utils/typeChart';
 import type { PkmnType } from '../../utils/typeChart';
 
-// Helper for Defensive Matchups
-function getDamageMultiplier(attackerType: PkmnType, defenderTypes: string[]): number {
-    let mult = 1;
-    defenderTypes.forEach(defType => {
-        const dmg = TYPE_CHART[attackerType]?.[defType as PkmnType] ?? 1;
-        mult *= dmg;
-    });
-    return mult;
-}
-
-function getDefensiveMatchups(defenderTypes: string[]) {
-    const results: Record<number, PkmnType[]> = { 4: [], 2: [], 1: [], 0.5: [], 0.25: [], 0: [] };
-    TYPES.forEach(attackerType => {
-        const mult = getDamageMultiplier(attackerType, defenderTypes);
-        if (results[mult]) results[mult].push(attackerType);
-    });
-    return results;
-}
+// Helper for Defensive Matchups removed - now using shared utility
 
 export const Pokedex: React.FC = () => {
     const [allPokemon, setAllPokemon] = useState<string[]>([]);
@@ -236,7 +219,7 @@ export const Pokedex: React.FC = () => {
                                     {pkmnData.moves && pkmnData.moves.slice(0, 20).map((m: any) => {
                                         const details = moveDetails[m.move.name];
                                         return (
-                                            <button 
+                                            <button
                                                 key={m.move.name}
                                                 className="text-left text-xs p-2 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center group transition-all"
                                                 onClick={() => handleMoveClick(m.move.name)}

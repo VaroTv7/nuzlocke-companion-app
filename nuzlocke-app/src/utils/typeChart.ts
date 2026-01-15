@@ -37,3 +37,12 @@ export function getEffectiveness(attacker: PkmnType, defenders: PkmnType[]): num
     });
     return mult;
 }
+
+export function getDefensiveMatchups(defenderTypes: string[]) {
+    const results: Record<number, PkmnType[]> = { 4: [], 2: [], 1: [], 0.5: [], 0.25: [], 0: [] };
+    TYPES.forEach(attackerType => {
+        const mult = getEffectiveness(attackerType, defenderTypes as PkmnType[]);
+        if (results[mult]) results[mult].push(attackerType);
+    });
+    return results;
+}
