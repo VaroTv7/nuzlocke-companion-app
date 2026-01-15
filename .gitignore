@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.DS_Store
+coverage
+.vscode
+saves
+migrated_saves
+backend/node_modules
+backend/saves
+backend/migrated_saves
+backend/saves.db
