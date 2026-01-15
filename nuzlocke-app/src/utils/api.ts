@@ -3,9 +3,12 @@
 
 // Determine API base URL based on current location
 const getApiBaseUrl = (): string => {
-    // In production, API is on same host but port 8086
-    const host = window.location.hostname;
-    return `http://${host}:8086/api`;
+    // In production, the API runs on port 8086 of the same host
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+
+    // Explicitly target the backend port 8086
+    return `${protocol}//${host}:8086/api`;
 };
 
 const API_BASE = getApiBaseUrl();
