@@ -59,17 +59,60 @@ Esto levantará:
 ## ⚡ Smart Import (Cómo usar)
 1. Ve al menú de "Partidas Guardadas" (icono carpeta).
 2. Pulsa el botón del rayo (⚡).
-3. Pega tu JSON con el formato:
+3. Pega tu JSON con el formato (Ejemplo Profesional):
+
 ```json
 {
-    "name": "Partida Nueva",
-    "team": ["Pikachu", "Charizard"],
-    "box_details": {
-        "Pikachu": { "name": "Pikachu", "level": 5 },
-        "Charizard": { "name": "Charizard", "level": 36 }
+  "name": "Partida Maestra",
+  "game": "Pokémon Nuzlocke",
+  "team": ["Ignis", "Leviathan", "Sparky", "Spectre", "Mountain", "IQ"],
+  "box_details": {
+    "Ignis": {
+      "name": "Charizard",
+      "nickname": "Ignis",
+      "level": 60,
+      "item": "Carbón",
+      "moves": ["Lanzallamas", "Tajo Aéreo", "Pulso Dragón", "Respiro"]
+    },
+    "Leviathan": {
+      "name": "Gyarados",
+      "nickname": "Leviathan",
+      "level": 58,
+      "item": "Agua Mística",
+      "moves": ["Cascada", "Triturar", "Danza Dragón", "Colmillo Hielo"]
+    },
+    "Sparky": {
+      "name": "Jolteon",
+      "nickname": "Sparky",
+      "level": 57,
+      "item": "Imán",
+      "moves": ["Rayo", "Voltiocambio", "Bola Sombra", "Onda Trueno"]
+    },
+    "Spectre": {
+      "name": "Gengar",
+      "nickname": "Spectre",
+      "level": 59,
+      "item": "Lodo Negro",
+      "moves": ["Bola Sombra", "Bomba Lodo", "Brillo Mágico", "Mismo Destino"]
+    },
+    "Mountain": {
+      "name": "Tyranitar",
+      "nickname": "Mountain",
+      "level": 62,
+      "item": "Restos",
+      "moves": ["Roca Afilada", "Triturar", "Terremoto", "Puño Hielo"]
+    },
+    "IQ": {
+      "name": "Alakazam",
+      "nickname": "IQ",
+      "level": 58,
+      "item": "Cuchara Torcida",
+      "moves": ["Psíquico", "Onda Certera", "Recuperación", "Paz Mental"]
     }
+  }
 }
 ```
+
 4. ¡Listo! La app generará tu partida.
 
 ---
