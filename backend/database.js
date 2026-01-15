@@ -39,7 +39,23 @@ function initialize() {
 
         // Migrate existing JSON files
         migrateJSONFiles();
+        // Recover from bad migration (empty states)
+        recoverBadMigration();
     });
+}
+
+function getSafeState(data) {
+    // If data has a 'state' property, use it.
+    // Otherwise, the data itself is likely the state (legacy format),
+    // but we should try to exclude metadata like 'id', 'name', 'lastModified' if possible.
+    if (data.state) return data.state;
+
+    // Legacy format hypothesis: Root object is state
+    const state = { ...data };
+    delete state.id;
+    delete state.name;
+    delete state.lastModified;
+    return state;
 }
 
 function migrateJSONFiles() {
@@ -52,7 +68,7 @@ function migrateJSONFiles() {
 
     const stmt = db.prepare("INSERT OR IGNORE INTO saves (id, name, state, last_modified) VALUES (?, ?, ?, ?)");
 
-    files.forEach(file => {
+    for (const file of files) {
         try {
             const filePath = path.join(SAVES_DIR, file);
             const rawData = fs.readFileSync(filePath, 'utf8');
@@ -60,7 +76,7 @@ function migrateJSONFiles() {
 
             const id = data.id || file.replace('.json', '');
             const name = data.name || 'Sin nombre';
-            const state = JSON.stringify(data.state || {});
+            const state = JSON.stringify(getSafeState(data));
             const lastModified = data.lastModified || new Date().toISOString();
 
             stmt.run(id, name, state, lastModified, (err) => {
@@ -68,15 +84,52 @@ function migrateJSONFiles() {
                     console.error(`Failed to migrate ${file}:`, err.message);
                 } else {
                     console.log(`Migrated ${file} to SQLite.`);
-                    // Move to migrated folder to avoid re-processing
+                    // Move to migrated folder
                     fs.renameSync(filePath, path.join(MIGRATED_DIR, file));
                 }
             });
         } catch (err) {
             console.error(`Error reading ${file} for migration:`, err);
         }
-    });
+    }
+    stmt.finalize();
+}
 
+function recoverBadMigration() {
+    // Check if we have files in migrated_saves but DB entries have empty states
+    if (!fs.existsSync(MIGRATED_DIR)) return;
+
+    const files = fs.readdirSync(MIGRATED_DIR).filter(f => f.endsWith('.json'));
+    if (files.length === 0) return;
+
+    // Check one file to see if we need recovery
+    // We update ALL entries matching these files that have suspect states
+    const stmt = db.prepare(`UPDATE saves SET state = ? WHERE id = ? AND (state = '{}' OR state LIKE '{"lives":0%')`);
+
+    console.log(`Checking ${files.length} migrated files for recovery...`);
+
+    files.forEach(file => {
+        try {
+            const filePath = path.join(MIGRATED_DIR, file);
+            const rawData = fs.readFileSync(filePath, 'utf8');
+            const data = JSON.parse(rawData);
+
+            const id = data.id || file.replace('.json', '');
+            const safeState = getSafeState(data);
+
+            // Only update if the logic actually yields something different than empty
+            if (Object.keys(safeState).length > 0) {
+                const stateStr = JSON.stringify(safeState);
+                stmt.run(stateStr, id, function (err) {
+                    if (!err && this.changes > 0) {
+                        console.log(`Recovered save data for ${id}`);
+                    }
+                });
+            }
+        } catch (err) {
+            console.error(`Recovery error for ${file}:`, err);
+        }
+    });
     stmt.finalize();
 }
 
