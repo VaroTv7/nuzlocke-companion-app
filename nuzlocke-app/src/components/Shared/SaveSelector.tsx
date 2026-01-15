@@ -277,19 +277,7 @@ export const SaveSelector: React.FC<Props> = ({
                                 <textarea
                                     value={smartImportJson}
                                     onChange={(e) => setSmartImportJson(e.target.value)}
-                                    placeholder={JSON.stringify({
-                                        "name": "Partida Pro",
-                                        "game": "Pokémon Edición Completa",
-                                        "team": ["Draco", "Tifón", "Voltio", "Sombra", "Roca", "Mente"],
-                                        "box_details": {
-                                            "Draco": { "name": "Charizard", "nickname": "Draco", "level": 55, "item": "Carbón", "moves": ["Lanzallamas", "Tajo Aéreo", "Garra Dragón", "Terremoto"] },
-                                            "Tifón": { "name": "Gyarados", "nickname": "Tifón", "level": 54, "item": "Agua Mística", "moves": ["Cascada", "Triturar", "Danza Dragón", "Colmillo Hielo"] },
-                                            "Voltio": { "name": "Jolteon", "nickname": "Voltio", "level": 53, "item": "Imán", "moves": ["Rayo", "Voltiocambio", "Bola Sombra", "Onda Trueno"] },
-                                            "Sombra": { "name": "Gengar", "nickname": "Sombra", "level": 54, "item": "Hechizo", "moves": ["Bola Sombra", "Bomba Lodo", "Hipnosis", "Come Sueños"] },
-                                            "Roca": { "name": "Tyranitar", "nickname": "Roca", "level": 56, "item": "Restos", "moves": ["Roca Afilada", "Triturar", "Terremoto", "Trampa Rocas"] },
-                                            "Mente": { "name": "Alakazam", "nickname": "Mente", "level": 55, "item": "Cuchara Torcida", "moves": ["Psíquico", "Bola Sombra", "Onda Certera", "Recuperación"] }
-                                        }
-                                    }, null, 2)}
+                                    placeholder="Pega aquí tu JSON... (Ver README para ejemplo completo)"
                                     className="w-full h-64 text-xs bg-black/40 border border-white/10 rounded p-2 text-gray-300 focus:border-cyber-warning focus:outline-none resize-none font-mono"
                                     autoFocus
                                 />
