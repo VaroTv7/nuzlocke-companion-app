@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cyber-dark text-white font-cyber min-h-screen overflow-x-hidden selection:bg-cyber-primary selection:text-cyber-dark;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.15) 0%, transparent 20%),
+      radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 20%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM22.485 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 22.485l.828.83-1.415 1.415-.828-.828-.828.828L-1.415 22.485l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 54.627l.828.83-1.415 1.415-.828-.828-.828.828L-1.415 54.627l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM54.627 60l.83-.828-1.415-1.415-.828.828-.828-.828-1.415 1.415.828.828-.828.828 1.415 1.415-.828-.828.828-.828zM22.485 60l.83-.828-1.415-1.415-.828.828-.828-.828-1.415 1.415.828.828-.828.828 1.415 1.415-.828-.828.828-.828zM0 22.485l.828-.828-1.415-1.415-.828.828-.828-.828L-1.415 22.485l.828.828-.828.828 1.415 1.415.828-.828.828.828zM0 54.627l.828-.828-1.415-1.415-.828.828-.828-.828L-1.415 54.627l.828.828-.828.828 1.415 1.415.828-.828.828.828zM60 54.627l-.828.83 1.415 1.415.828-.828.828.828 1.415-1.415-.828-.828.828-.828-1.415-1.415-.828.828-.828-.828zM60 22.485l-.828.83 1.415 1.415.828-.828.828.828 1.415-1.415-.828-.828.828-.828-1.415-1.415-.828.828-.828-.828zM60 0l-.828.828 1.415 1.415.828-.828.828.828 1.415-1.415-.828-.828.828-.828-1.415-1.415-.828.828-.828-.828zM30 30c0 16.569-13.431 30-30 30-16.569 0-30-13.431-30-30 0-16.569 13.431-30 30-30 16.569 0 30 13.431 30 30z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cyber-dark;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cyber-primary/50 rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cyber-primary;
+  }
+  
+  /* Glass Card Utility */
+  .glass-card {
+    @apply bg-glass-100 backdrop-blur-md border border-glass-300 shadow-lg text-white;
+  }
+  
+  .glass-panel {
+    @apply bg-cyber-panel/80 backdrop-blur-lg border border-white/10;
+  }
+  
+  .cyber-input {
+    @apply bg-black/40 border border-white/20 rounded px-2 py-1 focus:border-cyber-primary focus:outline-none focus:ring-1 focus:ring-cyber-primary transition-colors text-white;
+  }
+}

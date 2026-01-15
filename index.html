@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaroLocke Companion v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --type-normal: #A8A77A;
+            --type-fire: #EE8130;
+            --type-water: #6390F0;
+            --type-electric: #F7D02C;
+            --type-grass: #7AC74C;
+            --type-ice: #96D9D6;
+            --type-fighting: #C22E28;
+            --type-poison: #A33EA1;
+            --type-ground: #E2BF65;
+            --type-flying: #A98FF3;
+            --type-psychic: #F95587;
+            --type-bug: #A6B91A;
+            --type-rock: #B6A136;
+            --type-ghost: #735797;
+            --type-dragon: #6F35FC;
+            --type-dark: #705746;
+            --type-steel: #B7B7CE;
+            --type-fairy: #D685AD;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .bg-t-normal {
+            background-color: var(--type-normal);
+        }
+
+        .text-t-normal {
+            color: var(--type-normal);
+        }
+
+        .bg-t-fire {
+            background-color: var(--type-fire);
+        }
+
+        .text-t-fire {
+            color: var(--type-fire);
+        }
+
+        .bg-t-water {
+            background-color: var(--type-water);
+        }
+
+        .text-t-water {
+            color: var(--type-water);
+        }
+
+        .bg-t-grass {
+            background-color: var(--type-grass);
+        }
+
+        .text-t-grass {
+            color: var(--type-grass);
+        }
+
+        .bg-t-electric {
+            background-color: var(--type-electric);
+        }
+
+        .text-t-electric {
+            color: var(--type-electric);
+        }
+
+        .bg-t-ice {
+            background-color: var(--type-ice);
+        }
+
+        .text-t-ice {
+            color: var(--type-ice);
+        }
+
+        .bg-t-fighting {
+            background-color: var(--type-fighting);
+        }
+
+        .text-t-fighting {
+            color: var(--type-fighting);
+        }
+
+        .bg-t-poison {
+            background-color: var(--type-poison);
+        }
+
+        .text-t-poison {
+            color: var(--type-poison);
+        }
+
+        .bg-t-ground {
+            background-color: var(--type-ground);
+        }
+
+        .text-t-ground {
+            color: var(--type-ground);
+        }
+
+        .bg-t-flying {
+            background-color: var(--type-flying);
+        }
+
+        .text-t-flying {
+            color: var(--type-flying);
+        }
+
+        .bg-t-psychic {
+            background-color: var(--type-psychic);
+        }
+
+        .text-t-psychic {
+            color: var(--type-psychic);
+        }
+
+        .bg-t-bug {
+            background-color: var(--type-bug);
+        }
+
+        .text-t-bug {
+            color: var(--type-bug);
+        }
+
+        .bg-t-rock {
+            background-color: var(--type-rock);
+        }
+
+        .text-t-rock {
+            color: var(--type-rock);
+        }
+
+        .bg-t-ghost {
+            background-color: var(--type-ghost);
+        }
+
+        .text-t-ghost {
+            color: var(--type-ghost);
+        }
+
+        .bg-t-dragon {
+            background-color: var(--type-dragon);
+        }
+
+        .text-t-dragon {
+            color: var(--type-dragon);
+        }
+
+        .bg-t-steel {
+            background-color: var(--type-steel);
+        }
+
+        .text-t-steel {
+            color: var(--type-steel);
+        }
+
+        .bg-t-dark {
+            background-color: var(--type-dark);
+        }
+
+        .text-t-dark {
+            color: var(--type-dark);
+        }
+
+        .bg-t-fairy {
+            background-color: var(--type-fairy);
+        }
+
+        .text-t-fairy {
+            color: var(--type-fairy);
+        }
+
+        .sprite-anim {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sprite-anim:hover {
+            transform: scale(1.15) translateY(-5px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 4px;
+        }
+
+        .medal-grayscale {
+            filter: grayscale(100%) opacity(0.4);
+            transition: all 0.3s;
+        }
+
+        .medal-active {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
+        .combat-type-badge {
+            font-family: 'Press Start 2P';
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden">
+
+    <nav class="bg-slate-900/90 border-b border-indigo-500/30 sticky top-0 z-50 shadow-2xl backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-ghost text-indigo-400 text-2xl animate-bounce"></i>
+                <div>
+                    <h1 class="text-xl font-bold text-white pixel-font tracking-tight">VAROLOCKE <span
+                            class="text-indigo-400">LOCKE</span></h1>
+                    <span class="text-xs text-slate-400 font-mono tracking-widest">COMPANION APP v2.0</span>
+                </div>
+            </div>
+
+            <div class="flex bg-slate-800 p-1 rounded-lg">
+                <button onclick="nav('dashboard')" id="nav-dashboard"
+                    class="px-4 py-2 rounded-md font-bold text-xs transition-all bg-indigo-600 text-white shadow-lg">
+                    <i class="fas fa-columns mr-1"></i>PANEL
+                </button>
+                <button onclick="nav('pc')" id="nav-pc"
+                    class="px-4 py-2 rounded-md font-bold text-xs transition-all text-slate-400 hover:text-white hover:bg-slate-700">
+                    <i class="fas fa-laptop mr-1"></i>PC
+                </button>
+                <button onclick="nav('combat')" id="nav-combat"
+                    class="px-4 py-2 rounded-md font-bold text-xs transition-all text-slate-400 hover:text-white hover:bg-slate-700">
+                    <i class="fas fa-fist-raised mr-1"></i>COMBATE
+                </button>
+                <button onclick="nav('rules')" id="nav-rules"
+                    class="px-4 py-2 rounded-md font-bold text-xs transition-all text-slate-400 hover:text-white hover:bg-slate-700">
+                    <i class="fas fa-book-open mr-1"></i>REGLAS
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-6 pb-24">
+
+        <section id="view-dashboard" class="space-y-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+                    <div
+                        class="absolute -right-6 -top-6 text-9xl text-red-500 opacity-10 group-hover:opacity-20 transition transform group-hover:rotate-12">
+                        <i class="fas fa-heart"></i></div>
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Vidas Restantes</h3>
+                    <div class="flex items-center gap-4">
+                        <span id="dash-lives" class="text-6xl font-bold pixel-font text-white drop-shadow-lg">10</span>
+                        <div class="flex flex-col gap-1 z-10">
+                            <button onclick="modLives(1)"
+                                class="w-8 h-8 rounded bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white border border-green-500/30 transition flex items-center justify-center"><i
+                                    class="fas fa-plus text-xs"></i></button>
+                            <button onclick="modLives(-1)"
+                                class="w-8 h-8 rounded bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 transition flex items-center justify-center"><i
+                                    class="fas fa-minus text-xs"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 lg:col-span-2 flex flex-col justify-center">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Medallas de Gimnasio</h3>
+                        <span id="medal-count" class="text-indigo-400 text-xs font-bold">0/8</span>
+                    </div>
+                    <div class="flex justify-between items-center px-2" id="medals-container"></div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Progreso</h3>
+                        <div class="text-xs font-bold text-yellow-400" id="obj-progress">0%</div>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-4">
+                        <div id="progress-bar"
+                            class="bg-gradient-to-r from-yellow-500 to-yellow-300 h-full transition-all duration-500"
+                            style="width: 0%"></div>
+                    </div>
+                    <button onclick="nav('rules')"
+                        class="text-xs text-center text-slate-400 hover:text-white underline">Ver objetivos</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-users text-indigo-500"></i> Equipo Activo
+                    </h2>
+                </div>
+                <div id="team-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+                <div id="team-empty"
+                    class="hidden glass-panel p-12 rounded-2xl text-center border-dashed border-2 border-slate-600">
+                    <i class="fas fa-ghost text-4xl text-slate-600 mb-4"></i>
+                    <p class="text-slate-400">Tu equipo está vacío. Ve al PC para reclutar Pokémon.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-pc" class="hidden fade-in flex flex-col lg:flex-row gap-6"
+            style="min-height:calc(100vh - 180px)">
+            <div
+                class="glass-panel rounded-2xl w-full lg:w-1/3 flex flex-col overflow-hidden border-t-4 border-indigo-500">
+                <div class="p-4 bg-slate-800/80 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="font-bold text-indigo-300"><i class="fas fa-box mr-2"></i>Caja PC</h3>
+                    <button onclick="addPokemon()"
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition transform hover:scale-105">
+                        <i class="fas fa-plus mr-1"></i> NUEVO
+                    </button>
+                </div>
+                <div id="pc-list" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
+                <div class="p-2 bg-slate-900 text-center text-[10px] text-slate-500 font-mono">
+                    CAJA: <span id="box-count">0</span> | EQUIPO: <span id="team-count">0</span> | CEMENTERIO: <span
+                        id="dead-count">0</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl w-full lg:w-2/3 p-6 overflow-y-auto relative">
+                <div id="editor-empty"
+                    class="h-full flex flex-col items-center justify-center text-slate-600 opacity-60">
+                    <i class="fas fa-microchip text-6xl mb-4 animate-pulse"></i>
+                    <p class="font-bold text-lg">SELECCIONA UN POKÉMON PARA EDITAR</p>
+                </div>
+
+                <div id="editor-content" class="hidden space-y-6">
+                    <div class="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
+                        <div class="relative group cursor-pointer" title="Click para recargar sprite">
+                            <div
+                                class="w-24 h-24 rounded-full bg-slate-900 border-2 border-indigo-500/50 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+                                <img id="ed-sprite" src="" class="w-20 h-20 object-contain sprite-anim"
+                                    onerror="this.src='https://img.icons8.com/color/96/pokeball-2.png'">
+                            </div>
+                        </div>
+
+                        <div class="flex-1 w-full space-y-3">
+                            <div class="flex gap-2">
+                                <input type="text" id="ed-name" placeholder="Especie / Mote"
+                                    class="w-full bg-slate-900/50 border border-slate-600 rounded px-4 py-2 text-xl font-bold text-white focus:border-indigo-500 focus:outline-none placeholder-slate-600 uppercase"
+                                    onchange="updateSprite(this.value)">
+                                <input type="number" id="ed-lvl" placeholder="Lv."
+                                    class="w-20 bg-slate-900/50 border border-slate-600 rounded px-2 py-2 text-xl font-bold text-center text-white focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <div class="flex gap-2">
+                                <select id="ed-type1"
+                                    class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1 text-sm text-slate-300 focus:border-indigo-500"></select>
+                                <select id="ed-type2"
+                                    class="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1 text-sm text-slate-300 focus:border-indigo-500"></select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2 min-w-[120px]">
+                            <button id="btn-team-toggle" onclick="toggleTeam()"
+                                class="w-full py-2 rounded font-bold text-xs uppercase tracking-wider transition shadow-lg border border-white/10"></button>
+                            <button onclick="toggleDeath()" id="btn-death-toggle"
+                                class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded font-bold text-xs uppercase tracking-wider transition border border-white/10">
+                                <i class="fas fa-skull"></i> Marcar Muerte
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Habilidad</label>
+                            <input type="text" id="ed-ability"
+                                class="w-full bg-slate-900/50 border border-slate-600 rounded px-3 py-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Objeto</label>
+                            <input type="text" id="ed-item"
+                                class="w-full bg-slate-900/50 border border-slate-600 rounded px-3 py-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Naturaleza</label>
+                            <input type="text" id="ed-nature"
+                                class="w-full bg-slate-900/50 border border-slate-600 rounded px-3 py-1.5 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                        <div class="flex justify-between items-end mb-3">
+                            <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-widest"><i
+                                    class="fas fa-meteor mr-1"></i> Moveset</h4>
+                            <span class="text-[10px] text-slate-500">Escribe y Enter para autocomplete</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="move-slot relative group">
+                                <div class="absolute inset-y-0 left-0 w-1 bg-slate-600 rounded-l" id="m1-indicator">
+                                </div><input type="text" id="m1-name" placeholder="Move 1"
+                                    class="w-full pl-4 pr-10 py-2 bg-slate-900 border border-slate-700 rounded text-sm font-bold focus:outline-none uppercase"
+                                    onchange="fetchMoveData(1)"><input type="text" id="m1-meta"
+                                    class="w-full mt-1 bg-transparent text-[10px] text-slate-400 font-mono pl-4"
+                                    placeholder="Type | Pow | Acc" disabled>
+                            </div>
+                            <div class="move-slot relative group">
+                                <div class="absolute inset-y-0 left-0 w-1 bg-slate-600 rounded-l" id="m2-indicator">
+                                </div><input type="text" id="m2-name" placeholder="Move 2"
+                                    class="w-full pl-4 pr-10 py-2 bg-slate-900 border border-slate-700 rounded text-sm font-bold focus:outline-none uppercase"
+                                    onchange="fetchMoveData(2)"><input type="text" id="m2-meta"
+                                    class="w-full mt-1 bg-transparent text-[10px] text-slate-400 font-mono pl-4"
+                                    placeholder="Type | Pow | Acc" disabled>
+                            </div>
+                            <div class="move-slot relative group">
+                                <div class="absolute inset-y-0 left-0 w-1 bg-slate-600 rounded-l" id="m3-indicator">
+                                </div><input type="text" id="m3-name" placeholder="Move 3"
+                                    class="w-full pl-4 pr-10 py-2 bg-slate-900 border border-slate-700 rounded text-sm font-bold focus:outline-none uppercase"
+                                    onchange="fetchMoveData(3)"><input type="text" id="m3-meta"
+                                    class="w-full mt-1 bg-transparent text-[10px] text-slate-400 font-mono pl-4"
+                                    placeholder="Type | Pow | Acc" disabled>
+                            </div>
+                            <div class="move-slot relative group">
+                                <div class="absolute inset-y-0 left-0 w-1 bg-slate-600 rounded-l" id="m4-indicator">
+                                </div><input type="text" id="m4-name" placeholder="Move 4"
+                                    class="w-full pl-4 pr-10 py-2 bg-slate-900 border border-slate-700 rounded text-sm font-bold focus:outline-none uppercase"
+                                    onchange="fetchMoveData(4)"><input type="text" id="m4-meta"
+                                    class="w-full mt-1 bg-transparent text-[10px] text-slate-400 font-mono pl-4"
+                                    placeholder="Type | Pow | Acc" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 border-t border-white/10">
+                        <button onclick="deletePokemon()"
+                            class="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest"><i
+                                class="fas fa-trash-alt mr-1"></i> Liberar</button>
+                        <button onclick="savePokemon()"
+                            class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded shadow-lg font-bold uppercase tracking-wider transition transform hover:scale-105">
+                            <i class="fas fa-save mr-2"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-combat" class="hidden fade-in max-w-4xl mx-auto">
+            <div class="glass-panel rounded-2xl p-6 md:p-8 border-2 border-indigo-500/30">
+                <h2 class="text-xl md:text-2xl font-bold text-center mb-6 pixel-font text-indigo-300">CALCULADORA DE
+                    COMBATE</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h3 class="text-center text-sm font-bold text-slate-400 uppercase mb-4">Ataque Entrante</h3>
+                        <div class="grid grid-cols-3 gap-2" id="atk-types-grid"></div>
+                        <div class="mt-4 text-center">
+                            <span id="selected-atk" class="text-xl font-bold uppercase text-white">---</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h3 class="text-center text-sm font-bold text-slate-400 uppercase mb-4">Defensa (Tu Pokémon)
+                        </h3>
+                        <div class="grid grid-cols-3 gap-2" id="def-types-grid"></div>
+                        <div class="mt-4 flex justify-center gap-2">
+                            <span id="selected-def1" class="text-lg font-bold uppercase text-white">---</span>
+                            <span class="text-slate-500">+</span>
+                            <span id="selected-def2" class="text-lg font-bold uppercase text-white">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-8 text-center bg-slate-900 rounded-xl p-6 md:p-8 border-t-4 border-indigo-500 shadow-2xl relative overflow-hidden">
+                    <p class="text-xs text-slate-500 uppercase tracking-widest mb-2">Eficacia Resultante</p>
+                    <div id="combat-result-bg" class="absolute inset-0 opacity-10 bg-white"></div>
+                    <h1 id="combat-multiplier"
+                        class="text-5xl md:text-6xl font-bold pixel-font text-white relative z-10">x1.0</h1>
+                    <p id="combat-text" class="text-lg md:text-xl mt-2 font-bold text-slate-300 relative z-10">DAÑO
+                        NEUTRO</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-rules" class="hidden fade-in space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-yellow-400 mb-4 pixel-font"><i
+                            class="fas fa-trophy mr-2"></i>OBJETIVOS</h3>
+                    <div id="rules-objectives" class="space-y-3"></div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-indigo-400 pixel-font"><i
+                                class="fas fa-scroll mr-2"></i>REGLAS</h3>
+                        <button onclick="addCustomRule()" class="text-xs bg-indigo-600 px-2 py-1 rounded">Add</button>
+                    </div>
+                    <div id="rules-custom" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="text-center pt-8 flex flex-wrap justify-center gap-4">
+                <button onclick="checkWin()"
+                    class="bg-gradient-to-r from-yellow-600 to-yellow-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:from-yellow-500 hover:to-yellow-400 transition">
+                    <i class="fas fa-flag-checkered mr-2"></i> VERIFICAR VICTORIA
+                </button>
+                <button onclick="downloadInfographic()"
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-indigo-500 transition">
+                    <i class="fas fa-download mr-2"></i> GENERAR INFOGRAFÍA
+                </button>
+                <button onclick="resetData()"
+                    class="text-red-500 hover:text-white underline text-xs self-center">Reset</button>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="end-modal"
+        class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-panel max-w-2xl w-full p-8 rounded-2xl text-center border-2 border-white/20">
+            <div id="modal-icon" class="text-6xl mb-4"></div>
+            <h2 id="modal-title" class="text-3xl md:text-4xl font-bold pixel-font mb-4 text-white"></h2>
+            <p id="modal-msg" class="text-slate-300 mb-8 text-lg"></p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="downloadInfographic()"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded font-bold shadow-lg flex items-center"><i
+                        class="fas fa-download mr-2"></i> Descargar</button>
+                <button onclick="closeModal()"
+                    class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded font-bold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="info-canvas" width="1200" height="800" class="hidden"></canvas>
+
+    <script>
+        const TYPES = ['normal', 'fire', 'water', 'grass', 'electric', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'steel', 'dark', 'fairy'];
+
+        // FULL TYPE CHART Gen 6+ (Indices match TYPES array)
+        const TYPE_CHART = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, .5, 0, 1, .5, 1, 1],
+            [1, .5, .5, 2, 1, 2, 1, 1, 1, 1, 1, 2, .5, 1, .5, 2, 1, 1],
+            [1, 2, .5, .5, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, .5, 1, 1, 1],
+            [1, .5, 2, .5, 1, 1, 1, .5, 2, .5, 1, .5, 2, 1, .5, .5, 1, 1],
+            [1, 1, 2, .5, .5, 1, 1, 1, 0, 2, 1, 1, 1, 1, .5, 1, 1, 1],
+            [1, .5, .5, 2, 1, .5, 1, 1, 2, 2, 1, 1, 1, 1, 2, .5, 1, 1],
+            [2, 1, 1, 1, 1, 2, 1, .5, 1, .5, .5, .5, 2, 0, 1, 2, 2, .5],
+            [1, 1, 1, 2, 1, 1, 1, .5, .5, 1, 1, 1, .5, .5, 1, 0, 1, 2],
+            [1, 2, 1, .5, 2, 1, 1, 2, 1, 0, 1, .5, 2, 1, 1, 2, 1, 1],
+            [1, 1, 1, 2, .5, 1, 2, 1, 1, 1, 1, 2, .5, 1, 1, .5, 1, 1],
+            [1, 1, 1, 1, 1, 1, 2, 2, 1, 1, .5, 1, 1, 1, 1, .5, 0, 1],
+            [1, .5, 1, 2, 1, 1, .5, .5, 1, .5, 2, 1, 1, .5, 1, .5, 2, .5],
+            [1, 2, 1, 1, 1, 2, .5, 1, .5, 2, 1, 2, 1, 1, 1, .5, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, .5, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, .5, 1, 0],
+            [1, .5, .5, 1, .5, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, .5, 1, 2],
+            [1, 1, 1, 1, 1, 1, .5, 1, 1, 1, 2, 1, 1, 2, 1, 1, .5, .5],
+            [1, .5, 1, 1, 1, 1, 2, .5, 1, 1, 1, 1, 1, 1, 2, .5, 2, 1]
+        ];
+
+        const DEFAULT_STATE = {
+            lives: 10,
+            medals: [false, false, false, false, false, false, false, false],
+            objectives: [
+                { id: 1, text: "Conseguir 1ª Medalla", done: false },
+                { id: 2, text: "Equipo completo (6 Pokémon)", done: false },
+                { id: 3, text: "Sin muertes antes del 3er Gimnasio", done: false },
+                { id: 4, text: "Evolucionar Starter a fase final", done: false },
+                { id: 5, text: "Vencer al Campeón", done: false }
+            ],
+            rules: [
+                { id: 101, text: "Solo capturar primer Pokémon de ruta" },
+                { id: 102, text: "Motes obligatorios a todos" },
+                { id: 103, text: "Si se debilita, muere permanentemente" }
+            ],
+            box: []
+        };
+
+        let state = JSON.parse(localStorage.getItem('varoLockeV2')) || JSON.parse(JSON.stringify(DEFAULT_STATE));
+        let selectedPkmnId = null;
+        let cAtk = null, cDef1 = null, cDef2 = null;
+
+        function init() {
+            const typesOpts = `<option value="">-</option>` + TYPES.map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+            document.getElementById('ed-type1').innerHTML = typesOpts;
+            document.getElementById('ed-type2').innerHTML = typesOpts;
+            renderCombatGrid();
+            if (state.box.length === 0) seedData();
+            renderAll();
+        }
+
+        function seedData() {
+            addPkmnModel("Charizard", 36, "fire", "flying", true);
+            addPkmnModel("Gyarados", 20, "water", "flying", true);
+        }
+
+        function saveData() { localStorage.setItem('varoLockeV2', JSON.stringify(state)); }
+
+        function renderAll() {
+            document.getElementById('dash-lives').innerText = state.lives;
+            renderMedals();
+            renderObjectives();
+            renderTeam();
+            renderPCList();
+            renderRules();
+            saveData();
+        }
+
+        function nav(viewId) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => { b.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg'); b.classList.add('text-slate-400'); });
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg');
+        }
+
+        function modLives(n) {
+            state.lives += n;
+            if (state.lives < 0) state.lives = 0;
+            renderAll();
+            if (state.lives === 0) triggerEndGame(false);
+        }
+
+        function renderMedals() {
+            const cont = document.getElementById('medals-container');
+            cont.innerHTML = state.medals.map((m, i) => `
+                <div onclick="toggleMedal(${i})" class="cursor-pointer transition transform hover:scale-110">
+                    <div class="w-8 h-8 rounded-full ${m ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 medal-active' : 'bg-slate-700 medal-grayscale'} flex items-center justify-center text-xs font-bold text-white shadow">${i + 1}</div>
+                </div>
+            `).join('');
+            document.getElementById('medal-count').innerText = `${state.medals.filter(Boolean).length}/8`;
+        }
+
+        function toggleMedal(idx) {
+            state.medals[idx] = !state.medals[idx];
+            renderAll();
+            if (state.medals.every(Boolean)) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function renderObjectives() {
+            const total = state.objectives.length;
+            const done = state.objectives.filter(o => o.done).length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('obj-progress').innerText = `${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('rules-objectives').innerHTML = state.objectives.map(o => `
+                <div onclick="toggleObj(${o.id})" class="flex items-center p-3 rounded-lg cursor-pointer transition ${o.done ? 'bg-green-900/30 border border-green-500/50' : 'bg-slate-800 border border-transparent'}">
+                    <div class="w-5 h-5 rounded border flex items-center justify-center mr-3 ${o.done ? 'bg-green-500 border-green-500' : 'border-slate-500'}">${o.done ? '<i class="fas fa-check text-xs text-white"></i>' : ''}</div>
+                    <span class="${o.done ? 'line-through text-slate-500' : 'text-slate-200'}">${o.text}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleObj(id) { const o = state.objectives.find(x => x.id === id); o.done = !o.done; renderAll(); }
+
+        function renderTeam() {
+            const team = state.box.filter(p => p.status === 'team');
+            const grid = document.getElementById('team-grid');
+            const empty = document.getElementById('team-empty');
+            if (team.length === 0) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            grid.innerHTML = team.map(p => `
+                <div class="glass-panel rounded-xl overflow-hidden relative group border-t-4" style="border-color: var(--type-${p.type1})">
+                    <div class="flex justify-between items-start p-4">
+                        <div><h3 class="font-bold text-lg text-white leading-tight uppercase">${p.name}</h3><span class="text-xs text-slate-400">Lv. ${p.lvl}</span></div>
+                        <div class="flex gap-1"><span class="w-3 h-3 rounded-full bg-t-${p.type1}"></span>${p.type2 ? `<span class="w-3 h-3 rounded-full bg-t-${p.type2}"></span>` : ''}</div>
+                    </div>
+                    <div class="flex justify-center my-2 h-24">
+                        <img src="${getSpriteUrl(p.name)}" class="h-24 object-contain sprite-anim filter drop-shadow-xl z-10" onerror="this.src='https://img.icons8.com/color/96/pokeball-2.png'">
+                    </div>
+                    <div class="px-4 pb-4">
+                        <div class="grid grid-cols-2 gap-1 mb-3">${p.moves.map(m => `<div class="text-[9px] px-1 py-1 rounded text-center truncate text-white font-bold shadow-sm ${m.type ? 'bg-t-' + m.type : 'bg-slate-700'}">${m.name || '-'}</div>`).join('')}</div>
+                        <button onclick="editPkmn('${p.id}')" class="w-full bg-slate-700/50 hover:bg-indigo-600 text-slate-300 hover:text-white py-2 rounded text-xs font-bold transition uppercase"><i class="fas fa-cog mr-1"></i> Gestionar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addPkmnModel(name, lvl, t1, t2, isTeam) {
+            const newP = { id: Date.now().toString(36) + Math.random().toString(36).substr(2), name, lvl, type1: t1, type2: t2, ability: "", item: "", nature: "", moves: [{}, {}, {}, {}], status: isTeam ? 'team' : 'box' };
+            state.box.push(newP);
+            return newP;
+        }
+
+        function addPokemon() { const p = addPkmnModel("Nuevo Pokémon", 5, "normal", "", false); editPkmn(p.id); renderAll(); }
+
+        function renderPCList() {
+            const list = document.getElementById('pc-list');
+            document.getElementById('box-count').innerText = state.box.filter(p => p.status === 'box').length;
+            document.getElementById('team-count').innerText = state.box.filter(p => p.status === 'team').length;
+            document.getElementById('dead-count').innerText = state.box.filter(p => p.status === 'dead').length;
+            list.innerHTML = state.box.map(p => `
+                <div onclick="editPkmn('${p.id}')" class="p-2 rounded cursor-pointer border flex items-center justify-between transition group ${selectedPkmnId === p.id ? 'bg-indigo-900/40 border-indigo-500' : 'bg-slate-800/40 border-transparent hover:bg-slate-700'}">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-2 h-8 rounded-full bg-t-${p.type1} flex-shrink-0"></div>
+                        <div class="truncate">
+                            <p class="font-bold text-xs ${p.status === 'team' ? 'text-green-400' : p.status === 'dead' ? 'text-red-500 line-through' : 'text-slate-300'}">${p.name}</p>
+                            <p class="text-[10px] text-slate-500">Lv.${p.lvl}</p>
+                        </div>
+                    </div>
+                    ${p.status === 'team' ? '<i class="fas fa-star text-[10px] text-yellow-500"></i>' : ''}${p.status === 'dead' ? '<i class="fas fa-skull text-[10px] text-slate-600"></i>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function editPkmn(id) {
+            selectedPkmnId = id;
+            nav('pc');
+            const p = state.box.find(x => x.id === id);
+            document.getElementById('editor-empty').classList.add('hidden');
+            document.getElementById('editor-content').classList.remove('hidden');
+            document.getElementById('ed-name').value = p.name;
+            document.getElementById('ed-lvl').value = p.lvl;
+            document.getElementById('ed-type1').value = p.type1;
+            document.getElementById('ed-type2').value = p.type2 || "";
+            document.getElementById('ed-ability').value = p.ability || "";
+            document.getElementById('ed-item').value = p.item || "";
+            document.getElementById('ed-nature').value = p.nature || "";
+            document.getElementById('ed-sprite').src = getSpriteUrl(p.name);
+            [0, 1, 2, 3].forEach(i => {
+                const m = p.moves[i] || {};
+                const nameInp = document.getElementById(`m${i + 1}-name`);
+                const metaInp = document.getElementById(`m${i + 1}-meta`);
+                const ind = document.getElementById(`m${i + 1}-indicator`);
+                nameInp.value = m.name || "";
+                metaInp.value = m.type ? `${m.type} | Pow:${m.pow || '-'} | Acc:${m.acc || '-'}` : "";
+                if (m.type) { nameInp.className = `w-full pl-4 pr-10 py-2 border border-slate-700 rounded text-sm font-bold focus:outline-none uppercase text-white bg-t-${m.type}`; ind.className = `absolute inset-y-0 left-0 w-1 rounded-l bg-white`; }
+                else { nameInp.className = "w-full pl-4 pr-10 py-2 bg-slate-900 border border-slate-700 rounded text-sm font-bold focus:border-indigo-500 focus:outline-none uppercase text-white"; ind.className = "absolute inset-y-0 left-0 w-1 bg-slate-600 rounded-l"; }
+            });
+            const btnTeam = document.getElementById('btn-team-toggle');
+            if (p.status === 'team') { btnTeam.innerHTML = '<i class="fas fa-box"></i> A CAJA'; btnTeam.className = "w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded font-bold text-xs uppercase tracking-wider transition"; }
+            else if (p.status === 'box') { btnTeam.innerHTML = '<i class="fas fa-arrow-up"></i> AL EQUIPO'; btnTeam.className = "w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold text-xs uppercase tracking-wider transition shadow-lg"; }
+            else { btnTeam.innerHTML = "REVIVIR"; btnTeam.className = "w-full py-2 bg-red-900/50 text-red-300 rounded text-xs"; }
+            renderPCList();
+        }
+
+        function updateSprite(name) { if (selectedPkmnId) { document.getElementById('ed-sprite').src = getSpriteUrl(name); savePokemon(); } }
+        function getSpriteUrl(name) { const clean = name.toLowerCase().replace(/[^a-z0-9]/g, ''); return `https://play.pokemonshowdown.com/sprites/xyani/${clean}.gif`; }
+
+        async function fetchMoveData(slotIdx) {
+            const nameInput = document.getElementById(`m${slotIdx}-name`);
+            const query = nameInput.value.toLowerCase().replace(/ /g, '-');
+            if (!query) return;
+            nameInput.style.opacity = "0.5";
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/move/${query}`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const mData = { name: data.names.find(n => n.language.name === 'es')?.name || data.name, type: data.type.name, pow: data.power, acc: data.accuracy };
+                nameInput.value = mData.name;
+                document.getElementById(`m${slotIdx}-meta`).value = `${mData.type.toUpperCase()} | Pow:${mData.pow || '-'} | Acc:${mData.acc || '-'}`;
+                const p = state.box.find(x => x.id === selectedPkmnId);
+                p.moves[slotIdx - 1] = mData;
+                editPkmn(selectedPkmnId);
+            } catch (e) { nameInput.style.opacity = "1"; }
+        }
+
+        function savePokemon() {
+            if (!selectedPkmnId) return;
+            const p = state.box.find(x => x.id === selectedPkmnId);
+            p.name = document.getElementById('ed-name').value;
+            p.lvl = parseInt(document.getElementById('ed-lvl').value) || 1;
+            p.type1 = document.getElementById('ed-type1').value;
+            p.type2 = document.getElementById('ed-type2').value;
+            p.ability = document.getElementById('ed-ability').value;
+            p.item = document.getElementById('ed-item').value;
+            p.nature = document.getElementById('ed-nature').value;
+            [0, 1, 2, 3].forEach(i => { const val = document.getElementById(`m${i + 1}-name`).value; if (p.moves[i].name !== val) p.moves[i].name = val; });
+            renderAll();
+        }
+
+        function toggleTeam() {
+            if (!selectedPkmnId) return;
+            const p = state.box.find(x => x.id === selectedPkmnId);
+            const teamSize = state.box.filter(x => x.status === 'team').length;
+            if (p.status === 'team') p.status = 'box';
+            else if (p.status === 'box') { if (teamSize >= 6) return alert("Equipo lleno (Max 6)."); p.status = 'team'; }
+            else p.status = 'box';
+            editPkmn(selectedPkmnId);
+            renderAll();
+        }
+
+        function toggleDeath() { if (!selectedPkmnId) return; const p = state.box.find(x => x.id === selectedPkmnId); if (confirm(`¿Declarar muerto a ${p.name}?`)) { p.status = 'dead'; editPkmn(selectedPkmnId); renderAll(); } }
+        function deletePokemon() { if (confirm("¿Eliminar PERMANENTEMENTE?")) { state.box = state.box.filter(x => x.id !== selectedPkmnId); selectedPkmnId = null; document.getElementById('editor-content').classList.add('hidden'); document.getElementById('editor-empty').classList.remove('hidden'); renderAll(); } }
+
+        function renderCombatGrid() {
+            const atkGrid = document.getElementById('atk-types-grid');
+            const defGrid = document.getElementById('def-types-grid');
+            const btn = (t, side) => `<button onclick="setCombatType('${t}', '${side}')" class="combat-type-badge bg-t-${t} text-white opacity-50 hover:opacity-100 hover:scale-105 transition border-2 border-transparent" id="btn-${side}-${t}">${t.substring(0, 3)}</button>`;
+            atkGrid.innerHTML = TYPES.map(t => btn(t, 'atk')).join('');
+            defGrid.innerHTML = TYPES.map(t => btn(t, 'def')).join('');
+        }
+
+        function setCombatType(type, side) {
+            if (side === 'atk') {
+                cAtk = type;
+                document.querySelectorAll('#atk-types-grid button').forEach(b => { b.classList.add('opacity-50', 'border-transparent'); b.classList.remove('border-white', 'opacity-100', 'scale-110'); });
+                const btn = document.getElementById(`btn-atk-${type}`);
+                btn.classList.remove('opacity-50', 'border-transparent'); btn.classList.add('opacity-100', 'border-white', 'scale-110');
+                document.getElementById('selected-atk').innerText = type;
+                document.getElementById('selected-atk').className = `text-xl font-bold uppercase text-t-${type}`;
+            } else {
+                if (cDef1 === type) cDef1 = null; else if (cDef2 === type) cDef2 = null; else if (!cDef1) cDef1 = type; else if (!cDef2) cDef2 = type; else { cDef1 = type; cDef2 = null; }
+                document.querySelectorAll('#def-types-grid button').forEach(b => b.classList.add('opacity-50', 'border-transparent'));
+                if (cDef1) { document.getElementById(`btn-def-${cDef1}`).classList.remove('opacity-50', 'border-transparent'); document.getElementById(`btn-def-${cDef1}`).classList.add('opacity-100', 'border-white'); }
+                if (cDef2) { document.getElementById(`btn-def-${cDef2}`).classList.remove('opacity-50', 'border-transparent'); document.getElementById(`btn-def-${cDef2}`).classList.add('opacity-100', 'border-white'); }
+                document.getElementById('selected-def1').innerText = cDef1 || "---"; document.getElementById('selected-def1').className = cDef1 ? `text-lg font-bold uppercase text-t-${cDef1}` : "text-lg font-bold uppercase text-white";
+                document.getElementById('selected-def2').innerText = cDef2 || "---"; document.getElementById('selected-def2').className = cDef2 ? `text-lg font-bold uppercase text-t-${cDef2}` : "text-lg font-bold uppercase text-white";
+            }
+            calcCombat();
+        }
+
+        function calcCombat() {
+            if (!cAtk || (!cDef1 && !cDef2)) { document.getElementById('combat-multiplier').innerText = "x1.0"; document.getElementById('combat-text').innerText = "ESPERANDO DATOS..."; return; }
+            const atkIdx = TYPES.indexOf(cAtk);
+            const def1Idx = cDef1 ? TYPES.indexOf(cDef1) : -1;
+            const def2Idx = cDef2 ? TYPES.indexOf(cDef2) : -1;
+            let mult = 1;
+            if (def1Idx >= 0) mult *= TYPE_CHART[atkIdx][def1Idx];
+            if (def2Idx >= 0) mult *= TYPE_CHART[atkIdx][def2Idx];
+            const disp = document.getElementById('combat-multiplier');
+            const txt = document.getElementById('combat-text');
+            const bg = document.getElementById('combat-result-bg');
+            disp.innerText = `x${mult}`;
+            if (mult >= 4) { txt.innerText = "¡¡SUPER MEGA EFICAZ!!"; txt.className = "text-xl mt-2 font-bold text-green-300 relative z-10 animate-pulse"; bg.className = "absolute inset-0 opacity-30 bg-green-500 animate-pulse"; }
+            else if (mult >= 2) { txt.innerText = "¡ES MUY EFICAZ!"; txt.className = "text-xl mt-2 font-bold text-green-400 relative z-10"; bg.className = "absolute inset-0 opacity-20 bg-green-500"; }
+            else if (mult === 0) { txt.innerText = "NO AFECTA"; txt.className = "text-xl mt-2 font-bold text-slate-500 relative z-10"; bg.className = "absolute inset-0 opacity-20 bg-slate-500"; }
+            else if (mult < 1) { txt.innerText = "NO ES MUY EFICAZ..."; txt.className = "text-xl mt-2 font-bold text-red-400 relative z-10"; bg.className = "absolute inset-0 opacity-20 bg-red-500"; }
+            else { txt.innerText = "DAÑO NEUTRO"; txt.className = "text-xl mt-2 font-bold text-white relative z-10"; bg.className = "absolute inset-0 opacity-10 bg-white"; }
+        }
+
+        function renderRules() { document.getElementById('rules-custom').innerHTML = state.rules.map((r, i) => `<div class="flex justify-between items-center bg-slate-800 p-2 rounded"><span>${i + 1}. ${r.text}</span><button onclick="delRule(${r.id})" class="text-red-500"><i class="fas fa-times"></i></button></div>`).join(''); }
+        function addCustomRule() { const t = prompt("Nueva regla:"); if (t) { state.rules.push({ id: Date.now(), text: t }); renderAll(); } }
+        function delRule(id) { state.rules = state.rules.filter(x => x.id !== id); renderAll(); }
+
+        function checkWin() { if (state.objectives.every(o => o.done)) triggerEndGame(true); else alert("Aún te faltan objetivos."); }
+
+        function triggerEndGame(win) {
+            document.getElementById('end-modal').classList.remove('hidden');
+            const tit = document.getElementById('modal-title');
+            const ico = document.getElementById('modal-icon');
+            const msg = document.getElementById('modal-msg');
+            if (win) { tit.innerText = "¡CAMPEÓN!"; tit.className = "text-4xl font-bold pixel-font mb-4 text-yellow-400"; ico.innerHTML = '<i class="fas fa-trophy text-yellow-500 animate-bounce"></i>'; msg.innerText = "Has completado el Nuzlocke. ¡Leyenda!"; confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } }); }
+            else { tit.innerText = "GAME OVER"; tit.className = "text-4xl font-bold pixel-font mb-4 text-red-500"; ico.innerHTML = '<i class="fas fa-skull-crossbones text-red-600 animate-pulse"></i>'; msg.innerText = "Tus vidas llegaron a cero."; }
+            generateCanvas(win);
+        }
+        function closeModal() { document.getElementById('end-modal').classList.add('hidden'); }
+        function resetData() { if (confirm("¿Borrar todo?")) { localStorage.removeItem('varoLockeV2'); location.reload(); } }
+
+        function generateCanvas(win) {
+            const cvs = document.getElementById('info-canvas'); const ctx = cvs.getContext('2d');
+            ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, 1200, 800);
+            ctx.fillStyle = win ? "#FBBF24" : "#EF4444"; ctx.font = "bold 60px 'Courier New'"; ctx.textAlign = "center"; ctx.fillText(win ? "¡VICTORIA!" : "GAME OVER", 600, 100);
+            ctx.fillStyle = "white"; ctx.font = "30px Arial"; ctx.fillText("VAROLOCKE COMPANION v2.0", 600, 160);
+            ctx.font = "20px Arial"; ctx.fillStyle = "#94a3b8"; ctx.fillText(new Date().toLocaleDateString(), 600, 200);
+            let mx = 350; state.medals.forEach((m) => { ctx.beginPath(); ctx.arc(mx, 250, 20, 0, 2 * Math.PI); ctx.fillStyle = m ? "#FBBF24" : "#334155"; ctx.fill(); mx += 60; });
+            let x = 100; const team = state.box.filter(p => p.status === 'team');
+            team.forEach((p) => { const y = 350; ctx.fillStyle = "#1e293b"; ctx.fillRect(x, y, 300, 180); ctx.fillStyle = getTypeColor(p.type1); ctx.fillRect(x, y, 300, 10); ctx.fillStyle = "white"; ctx.textAlign = "left"; ctx.font = "bold 24px Arial"; ctx.fillText(p.name, x + 20, y + 50); ctx.fillStyle = "#94a3b8"; ctx.font = "18px Arial"; ctx.fillText(`Lv. ${p.lvl}`, x + 20, y + 80); ctx.font = "14px monospace"; p.moves.forEach((m, mi) => { ctx.fillStyle = m.type ? getTypeColor(m.type) : "#475569"; ctx.fillRect(x + 20, y + 100 + (mi * 18), 120, 14); ctx.fillStyle = "white"; ctx.fillText(m.name || "-", x + 25, y + 112 + (mi * 18)); }); x += 340; });
+        }
+        function getTypeColor(t) { const map = { fire: '#EE8130', water: '#6390F0', grass: '#7AC74C', electric: '#F7D02C', normal: '#A8A77A', flying: '#A98FF3', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', steel: '#B7B7CE', dark: '#705746', fairy: '#D685AD' }; return map[t] || '#64748b'; }
+        function downloadInfographic() { generateCanvas(state.objectives.every(o => o.done)); const link = document.createElement('a'); link.download = 'varo-locke-infografia.png'; link.href = document.getElementById('info-canvas').toDataURL(); link.click(); }
+
+        init();
+    </script>
+</body>
+
+</html>

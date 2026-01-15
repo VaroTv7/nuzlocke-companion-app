@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Frontend - React App (Builds from source)
+  varo-locke-frontend:
+    container_name: varo-locke-frontend
+    build:
+      context: ./nuzlocke-app
+      dockerfile: Dockerfile
+    image: varo-locke-companion:v2.0
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    depends_on:
+      - varo-locke-api
+
+  # Backend - Node.js API
+  varo-locke-api:
+    container_name: varo-locke-api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: varo-locke-api:v1.0
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./saves:/app/saves
+    environment:
+      - NODE_ENV=production
+      - PORT=8086
+      - SAVES_DIR=/app/saves
