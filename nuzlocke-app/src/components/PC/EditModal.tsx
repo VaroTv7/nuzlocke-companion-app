@@ -3,8 +3,9 @@ import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
 import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList } from '../../utils/pokeapi';
 import type { PkmnType } from '../../utils/typeChart';
-import { X, Save, Sparkles, Sword, Star } from 'lucide-react';
+import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle } from 'lucide-react';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
+import { TypeBadge } from '../Shared/TypeBadge';
 
 // UUID generator that works in non-secure contexts (HTTP)
 const generateUUID = (): string => {
@@ -52,6 +53,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
     const { addPokemon, updatePokemon, boxes } = useGameStore();
     const [formData, setFormData] = useState<Pokemon>(EMPTY_POKEMON);
     const [loading, setLoading] = useState(false);
+    const [viewingMove, setViewingMove] = useState<any>(null);
 
     // Lists for autocomplete
     const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
@@ -111,6 +113,14 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
             }
         } catch (e) {
             console.error(e);
+        }
+    };
+
+    const handleMoveClick = async (moveName: string) => {
+        if (!moveName) return;
+        const data = await fetchMoveData(moveName);
+        if (data) {
+            setViewingMove(data);
         }
     };
 
@@ -315,7 +325,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {formData.moves.map((move, idx) => (
-                                <div key={idx} className="glass-panel p-3 bg-white/5 border border-white/5 hover:border-white/20 transition-colors">
+                                <div key={idx} className="glass-panel p-3 bg-white/5 border border-white/5 hover:border-white/20 transition-all group">
                                     <div className="flex gap-2 items-center mb-2">
                                         <span className="text-gray-500 font-mono text-xs">0{idx + 1}</span>
                                         <AutocompleteInput
@@ -330,9 +340,27 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                                             }}
                                             onSelect={(val) => handleMoveAutoFill(idx, val)}
                                         />
+                                        {move.name && (
+                                            <button
+                                                onClick={() => handleMoveClick(move.name)}
+                                                className="ml-auto text-gray-500 hover:text-cyber-primary transition-colors"
+                                                title="Ver explicación"
+                                            >
+                                                <HelpCircle size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="flex justify-between items-center text-xs text-gray-400">
-                                        <span className={`uppercase font-bold text-${move.type}`}>{move.type || '???'}</span>
+                                        <div className="flex items-center gap-2">
+                                            {move.type && <TypeBadge type={move.type as PkmnType} size="sm" />}
+                                            {move.name && (
+                                                <span className="flex items-center gap-1">
+                                                    {move.power !== null && move.power > 0 ? (
+                                                        move.pp > 20 ? <Zap size={10} className="text-blue-400" /> : <Sword size={10} className="text-red-400" />
+                                                    ) : <Shield size={10} className="text-gray-400" />}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex gap-2">
                                             <span>POW: <b className="text-white">{move.power || '-'}</b></span>
                                             <span>ACC: <b className="text-white">{move.accuracy || '-'}</b></span>
@@ -361,6 +389,51 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                 </div>
 
             </div>
+
+            {/* Move Details Modal (Explicación) */}
+            {viewingMove && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[110] animate-fade-in" onClick={() => setViewingMove(null)}>
+                    <div className="glass-panel w-full max-w-md p-6 relative border border-white/20" onClick={e => e.stopPropagation()}>
+                        <button
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            onClick={() => setViewingMove(null)}
+                        >
+                            ✕
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <TypeBadge type={viewingMove.type} />
+                            <h3 className="text-xl font-bold capitalize text-white">{viewingMove.name}</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">Poder</span>
+                                    <span className="text-lg font-bold text-cyber-warning">{viewingMove.power || '-'}</span>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">Precisión</span>
+                                    <span className="text-lg font-bold text-cyber-primary">{viewingMove.accuracy || '-'}%</span>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">PP</span>
+                                    <span className="text-lg font-bold text-white">{viewingMove.pp}</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/5 p-3 rounded text-sm text-gray-300 leading-relaxed italic border-l-2 border-cyber-primary">
+                                "{viewingMove.description}"
+                            </div>
+
+                            <div className="flex justify-between items-center text-xs text-gray-500 uppercase mt-2">
+                                <span>Clase: {viewingMove.damage_class}</span>
+                                <span>{viewingMove.originalName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
