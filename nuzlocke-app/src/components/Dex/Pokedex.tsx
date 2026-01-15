@@ -3,7 +3,8 @@ import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Activity, Shield, Zap, Wind, User } from 'lucide-react';
-import { TYPE_CHART, TYPES, type PkmnType } from '../../utils/typeChart';
+import { TYPE_CHART, TYPES } from '../../utils/typeChart';
+import type { PkmnType } from '../../utils/typeChart';
 
 const TYPE_NAMES_ES: Record<string, string> = {
     normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'Eléctrico', grass: 'Planta', ice: 'Hielo',
