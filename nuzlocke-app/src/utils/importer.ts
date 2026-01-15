@@ -130,7 +130,7 @@ export const processSmartImport = async (jsonString: string): Promise<GameState 
             rules: [],
             notes: data.notes || '',
             lives: 10,
-            badges: [],
+            badges: [false, false, false, false, false, false, false, false],
             objectives: [],
             boxes: [{ id: 0, name: 'Caja 1' }, { id: 1, name: 'Caja 2' }, { id: 2, name: 'Caja 3' }],
 

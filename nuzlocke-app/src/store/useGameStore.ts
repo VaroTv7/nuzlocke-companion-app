@@ -194,8 +194,14 @@ export const useGameStore = create<GameState>()(
                 try {
                     const data = await fetchSave(saveId);
                     if (data && data.state) {
+                        // Ensure badges array is valid (repair for bad imports)
+                        const repairedState = { ...data.state };
+                        if (!repairedState.badges || !Array.isArray(repairedState.badges) || repairedState.badges.length !== 8) {
+                            repairedState.badges = [false, false, false, false, false, false, false, false];
+                        }
+
                         set({
-                            ...data.state,
+                            ...repairedState,
                             currentSaveId: data.id,
                             currentSaveName: data.name,
                             isServerMode: true,
