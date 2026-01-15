@@ -185,12 +185,14 @@ function App() {
                       : 'border-white/10 bg-black/40 grayscale opacity-50 hover:grayscale-0 hover:opacity-100'
                       }`}
                   >
-                    <img
-                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/${idx + 1}.png`}
-                      alt={`Medalla ${idx + 1}`}
-                      className="w-10 h-10 md:w-12 md:h-12 drop-shadow-lg"
-                      onError={(e) => (e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg')}
-                    />
+                    <div className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border ${active ? 'bg-gradient-to-br from-yellow-400 to-orange-600 border-yellow-300' : 'bg-gray-800 border-gray-600'}`}>
+                      <span className={`text-lg md:text-xl font-black ${active ? 'text-white drop-shadow-md' : 'text-gray-500'}`}>
+                        {idx + 1}
+                      </span>
+                    </div>
+                    {active && (
+                      <div className="absolute inset-0 rounded-full animate-ping bg-cyber-primary/30" />
+                    )}
                   </button>
                 ))}
               </div>

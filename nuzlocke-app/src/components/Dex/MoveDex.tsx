@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { fetchMoveList, fetchMoveData } from '../../utils/pokeapi';
-import { getEnglishMoveName, getSpanishMoveList } from '../../utils/moveTranslations';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Zap, Crosshair, BarChart } from 'lucide-react';
@@ -14,21 +13,14 @@ export const MoveDex: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        Promise.all([fetchMoveList(), Promise.resolve(getSpanishMoveList())])
-            .then(([moves, spanishMoves]) => {
-                // Combine and remove duplicates, sorting alphabetically
-                const combined = Array.from(new Set([...moves, ...spanishMoves])).sort();
-                setAllMoves(combined);
-            });
+        fetchMoveList().then(setAllMoves);
     }, []);
 
     useEffect(() => {
         if (selectedMove) {
             setLoading(true);
             setSearchTerm(selectedMove);
-            // Translate if it's a Spanish name, otherwise use as is
-            const englishName = getEnglishMoveName(selectedMove);
-            fetchMoveData(englishName).then(data => {
+            fetchMoveData(selectedMove).then(data => {
                 setMoveData(data);
                 setLoading(false);
             });

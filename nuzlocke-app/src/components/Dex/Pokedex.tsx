@@ -3,7 +3,38 @@ import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Activity, Shield, Zap, Wind, User } from 'lucide-react';
-import type { PkmnType } from '../../utils/typeChart';
+import { TYPE_CHART, TYPES, type PkmnType } from '../../utils/typeChart';
+
+const TYPE_NAMES_ES: Record<string, string> = {
+    normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'Eléctrico', grass: 'Planta', ice: 'Hielo',
+    fighting: 'Lucha', poison: 'Veneno', ground: 'Tierra', flying: 'Volador', psychic: 'Psíquico', bug: 'Bicho',
+    rock: 'Roca', ghost: 'Fantasma', dragon: 'Dragón', dark: 'Siniestro', steel: 'Acero', fairy: 'Hada',
+};
+
+const TYPE_COLORS: Record<string, string> = {
+    normal: '#A8A878', fire: '#F08030', water: '#6890F0', electric: '#F8D030', grass: '#78C850', ice: '#98D8D8',
+    fighting: '#C03028', poison: '#A040A0', ground: '#E0C068', flying: '#A890F0', psychic: '#F85888', bug: '#A8B820',
+    rock: '#B8A038', ghost: '#705898', dragon: '#7038F8', dark: '#705848', steel: '#B8B8D0', fairy: '#EE99AC',
+};
+
+// Helper for Defensive Matchups
+function getDamageMultiplier(attackerType: PkmnType, defenderTypes: string[]): number {
+    let mult = 1;
+    defenderTypes.forEach(defType => {
+        const dmg = TYPE_CHART[attackerType]?.[defType as PkmnType] ?? 1;
+        mult *= dmg;
+    });
+    return mult;
+}
+
+function getDefensiveMatchups(defenderTypes: string[]) {
+    const results: Record<number, PkmnType[]> = { 4: [], 2: [], 1: [], 0.5: [], 0.25: [], 0: [] };
+    TYPES.forEach(attackerType => {
+        const mult = getDamageMultiplier(attackerType, defenderTypes);
+        if (results[mult]) results[mult].push(attackerType);
+    });
+    return results;
+}
 
 export const Pokedex: React.FC = () => {
     const [allPokemon, setAllPokemon] = useState<string[]>([]);
@@ -140,8 +171,71 @@ export const Pokedex: React.FC = () => {
                                 </div>
                             </div>
 
-                        </div>
+                            {/* Defensive Matchups */}
+                            <div className="glass-card p-4">
+                                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Debilidades y Resistencias</h4>
+                                {(() => {
+                                    const matchups = getDefensiveMatchups(pkmnData.types);
+                                    return (
+                                        <div className="space-y-4">
+                                            {/* Weaknesses */}
+                                            {matchups[4].length > 0 && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold text-red-500 uppercase w-16">Súper x4</span>
+                                                    {matchups[4].map(t => <TypeBadge key={t} type={t} size="sm" />)}
+                                                </div>
+                                            )}
+                                            {matchups[2].length > 0 && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold text-orange-500 uppercase w-16">Débil x2</span>
+                                                    {matchups[2].map(t => <TypeBadge key={t} type={t} size="sm" />)}
+                                                </div>
+                                            )}
 
+                                            <div className="h-px bg-white/5 my-2" />
+
+                                            {/* Resistances */}
+                                            {matchups[0.5].length > 0 && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold text-green-500 uppercase w-16">Resiste x0.5</span>
+                                                    {matchups[0.5].map(t => <TypeBadge key={t} type={t} size="sm" />)}
+                                                </div>
+                                            )}
+                                            {matchups[0.25].length > 0 && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold text-emerald-500 uppercase w-16">Resiste x0.25</span>
+                                                    {matchups[0.25].map(t => <TypeBadge key={t} type={t} size="sm" />)}
+                                                </div>
+                                            )}
+                                            {matchups[0].length > 0 && (
+                                                <div className="flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold text-gray-500 uppercase w-16">Inmune x0</span>
+                                                    {matchups[0].map(t => <TypeBadge key={t} type={t} size="sm" />)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* Moves List */}
+                            <div className="glass-card p-4">
+                                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Movimientos Principales</h4>
+                                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                    {pkmnData.moves && pkmnData.moves.slice(0, 20).map((m: any) => (
+                                        <button
+                                            key={m.move.name}
+                                            className="text-left text-xs p-2 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center group transition-all"
+                                            onClick={() => alert(`Información de ataque: ${m.move.name} (WIP)`)}
+                                        >
+                                            <span className="capitalize text-gray-300 group-hover:text-cyber-primary">{m.move.name.replace('-', ' ')}</span>
+                                            <span className="opacity-0 group-hover:opacity-100 text-cyber-primary">Info ›</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 )}
 
@@ -151,7 +245,6 @@ export const Pokedex: React.FC = () => {
                         <p>Busca un Pokémon para ver su ficha técnica.</p>
                     </div>
                 )}
-
             </div>
         </div>
     );
