@@ -3,13 +3,12 @@ const path = require('path');
 const fs = require('fs');
 
 const DB_PATH = path.join(__dirname, 'saves.db');
-const SAVES_DIR = path.join(__dirname, 'saves');
-const MIGRATED_DIR = path.join(__dirname, 'migrated_saves');
+const SAVES_DIR = process.env.SAVES_DIR || path.join(__dirname, 'saves');
+const MIGRATED_DIR = path.join(SAVES_DIR, '..', 'migrated_saves');
 
-// Ensure migration directory exists
-if (!fs.existsSync(MIGRATED_DIR)) {
-    fs.mkdirSync(MIGRATED_DIR);
-}
+// Ensure directories exist
+if (!fs.existsSync(SAVES_DIR)) fs.mkdirSync(SAVES_DIR, { recursive: true });
+if (!fs.existsSync(MIGRATED_DIR)) fs.mkdirSync(MIGRATED_DIR, { recursive: true });
 
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
@@ -84,8 +83,13 @@ function migrateJSONFiles() {
                     console.error(`Failed to migrate ${file}:`, err.message);
                 } else {
                     console.log(`Migrated ${file} to SQLite.`);
-                    // Move to migrated folder
-                    fs.renameSync(filePath, path.join(MIGRATED_DIR, file));
+                    // SAFE MOVE: Use copy + unlink instead of rename for cross-device support (Docker)
+                    try {
+                        fs.copyFileSync(filePath, path.join(MIGRATED_DIR, file));
+                        fs.unlinkSync(filePath);
+                    } catch (moveErr) {
+                        console.error(`Error moving ${file} to migrated folder:`, moveErr);
+                    }
                 }
             });
         } catch (err) {
