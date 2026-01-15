@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
+import { fetchPokemonList, fetchPokemonSpecies, fetchMoveData } from '../../utils/pokeapi';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Activity, Shield, Zap, Wind, User } from 'lucide-react';
@@ -31,6 +31,7 @@ export const Pokedex: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState(''); // New state for input
     const [pkmnData, setPkmnData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [viewingMove, setViewingMove] = useState<any>(null);
 
     useEffect(() => {
         fetchPokemonList().then(setAllPokemon);
@@ -46,6 +47,13 @@ export const Pokedex: React.FC = () => {
             });
         }
     }, [selectedMon]);
+
+    const handleMoveClick = async (moveName: string) => {
+        const data = await fetchMoveData(moveName);
+        if (data) {
+            setViewingMove(data);
+        }
+    };
 
     const handleSelect = (val: string) => {
         setSearchTerm(val);
@@ -215,7 +223,7 @@ export const Pokedex: React.FC = () => {
                                         <button
                                             key={m.move.name}
                                             className="text-left text-xs p-2 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center group transition-all"
-                                            onClick={() => alert(`Información de ataque: ${m.move.name} (WIP)`)}
+                                            onClick={() => handleMoveClick(m.move.name)}
                                         >
                                             <span className="capitalize text-gray-300 group-hover:text-cyber-primary">{m.move.name.replace('-', ' ')}</span>
                                             <span className="opacity-0 group-hover:opacity-100 text-cyber-primary">Info ›</span>
@@ -235,6 +243,51 @@ export const Pokedex: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Move Details Modal */}
+            {viewingMove && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 animate-fade-in" onClick={() => setViewingMove(null)}>
+                    <div className="glass-card w-full max-w-md p-6 relative border border-white/20" onClick={e => e.stopPropagation()}>
+                        <button
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            onClick={() => setViewingMove(null)}
+                        >
+                            ✕
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <TypeBadge type={viewingMove.type} />
+                            <h3 className="text-xl font-bold capitalize text-white">{viewingMove.name}</h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">Poder</span>
+                                    <span className="text-lg font-bold text-cyber-warning">{viewingMove.power || '-'}</span>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">Precisión</span>
+                                    <span className="text-lg font-bold text-cyber-primary">{viewingMove.accuracy || '-'}%</span>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded">
+                                    <span className="block text-xs text-gray-500 uppercase">PP</span>
+                                    <span className="text-lg font-bold text-white">{viewingMove.pp}</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-white/5 p-3 rounded text-sm text-gray-300 leading-relaxed italic border-l-2 border-cyber-primary">
+                                "{viewingMove.description}"
+                            </div>
+
+                            <div className="flex justify-between items-center text-xs text-gray-500 uppercase mt-2">
+                                <span>Clase: {viewingMove.damage_class}</span>
+                                <span>{viewingMove.originalName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
