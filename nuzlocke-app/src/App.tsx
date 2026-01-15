@@ -9,13 +9,17 @@ import { PokemonCard } from './components/PC/PokemonCard'
 import { EditModal } from './components/PC/EditModal'
 import { NotesWidget } from './components/Dashboard/NotesWidget'
 import { TeamAnalysis } from './components/Dashboard/TeamAnalysis'
+import { SettingsModal } from './components/Shared/SettingsModal'
+import { AICoach } from './components/Dashboard/AICoach'
 import { SaveSelector } from './components/Shared/SaveSelector'
+import { Settings } from 'lucide-react'
 import { Plus, Swords, BookOpen, Search, Cloud, CloudOff, FileDown } from 'lucide-react'
 import type { Pokemon } from './store/useGameStore'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'pc' | 'combat' | 'movedex' | 'pokedex' | 'rules'>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingPokemon, setEditingPokemon] = useState<Pokemon | null>(null);
 
   const {
@@ -121,6 +125,15 @@ function App() {
               onChange={handleImportJSON}
             />
           </div>
+
+          {/* Settings / AI Config */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-cyber-primary transition-all border border-white/5 bg-black/20"
+            title="Configuración AI"
+          >
+            <Settings size={18} />
+          </button>
 
           {/* Lives Counter */}
           <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/10">
@@ -263,6 +276,13 @@ function App() {
         onClose={() => setIsModalOpen(false)}
         pokemon={editingPokemon}
       />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+
+      <AICoach />
     </div>
   )
 }

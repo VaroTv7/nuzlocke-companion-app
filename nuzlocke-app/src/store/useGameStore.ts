@@ -36,6 +36,8 @@ interface SaveableState {
     rules: { id: string; text: string }[];
     boxes: { id: number; name: string }[];
     notes: string;
+    geminiConfig: { apiKey: string; model: string };
+    aiChatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
 }
 
 export interface GameState extends SaveableState {
@@ -53,6 +55,9 @@ export interface GameState extends SaveableState {
     toggleBadge: (index: number) => void;
     toggleObjective: (id: string) => void;
     setNotes: (text: string) => void;
+    setGeminiConfig: (config: { apiKey: string; model: string }) => void;
+    setAiChatHistory: (history: { role: 'user' | 'model'; parts: { text: string }[] }[]) => void;
+    clearAiChatHistory: () => void;
     addBox: () => void;
     updateBox: (id: number, name: string) => void;
 
@@ -83,6 +88,8 @@ const DEFAULT_STATE: SaveableState = {
         { id: 3, name: 'Cementerio' },
     ],
     notes: '',
+    geminiConfig: { apiKey: '', model: 'gemini-1.5-flash' },
+    aiChatHistory: [],
 };
 
 // Helper to extract saveable state
@@ -94,6 +101,8 @@ const getSaveableState = (state: GameState): SaveableState => ({
     rules: state.rules,
     boxes: state.boxes,
     notes: state.notes,
+    geminiConfig: state.geminiConfig,
+    aiChatHistory: state.aiChatHistory,
 });
 
 // Debounced auto-save
@@ -152,6 +161,18 @@ export const useGameStore = create<GameState>()(
             },
             setNotes: (text) => {
                 set({ notes: text });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            setGeminiConfig: (config) => {
+                set({ geminiConfig: config });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            setAiChatHistory: (history) => {
+                set({ aiChatHistory: history });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            clearAiChatHistory: () => {
+                set({ aiChatHistory: [] });
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
             addBox: () => {
