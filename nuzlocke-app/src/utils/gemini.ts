@@ -55,11 +55,21 @@ export const callGemini = async (apiKey: string, model: string, history: any[], 
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            const errorMsg = data.error?.message || response.statusText;
+            throw new Error(`API Error (${response.status}): ${errorMsg}`);
+        }
+
         if (data.error) throw new Error(data.error.message);
+
+        if (!data.candidates || data.candidates.length === 0) {
+            throw new Error("Gemini no devolvió ninguna respuesta (Posible bloqueo de seguridad).");
+        }
 
         return data.candidates[0].content;
     } catch (error: any) {
-        console.error('Gemini Error:', error);
+        console.error('Gemini Error Details:', error);
         throw error;
     }
 };

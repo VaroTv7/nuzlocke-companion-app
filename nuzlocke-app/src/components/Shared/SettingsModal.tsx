@@ -49,9 +49,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             onChange={(e) => setGeminiConfig({ ...geminiConfig, model: e.target.value })}
                             className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-cyber-primary outline-none transition-all"
                         >
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Más rápido)</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Más inteligente)</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Gratis - Rápido)</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Gratis - Inteligente)</option>
+                            <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Gratis - Nueva Gen)</option>
                         </select>
+                        <p className="text-[10px] text-gray-500 italic mt-1">Usa la versión gratuita de AI Studio para evitar costes.</p>
                     </div>
 
                     <div className="pt-4 border-t border-white/5">

@@ -39,8 +39,11 @@ export const AICoach: React.FC = () => {
             if (response) {
                 setAiChatHistory([...newHistory, response]);
             }
-        } catch (error) {
-            setAiChatHistory([...newHistory, { role: 'model', parts: [{ text: "Error de conexión con Coach Varo. Revisa tu API Key." }] }]);
+        } catch (error: any) {
+            const errorMsg = error.message.includes('API Error')
+                ? error.message
+                : "Error de conexión con Coach Varo. Revisa tu API Key.";
+            setAiChatHistory([...newHistory, { role: 'model', parts: [{ text: errorMsg }] }]);
         } finally {
             setLoading(false);
         }
