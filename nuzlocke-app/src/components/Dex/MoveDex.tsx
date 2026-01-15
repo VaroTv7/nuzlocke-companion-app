@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchMoveList, fetchMoveData } from '../../utils/pokeapi';
+import { moveTranslations } from '../../utils/moveTranslations';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 import { Search, Zap, Crosshair, BarChart } from 'lucide-react';
@@ -40,15 +41,26 @@ export const MoveDex: React.FC = () => {
                     MoveDex <span className="text-xs text-gray-500 bg-black/50 px-2 py-1 rounded">Base de Datos de Ataques</span>
                 </h2>
 
-                <div className="mb-8">
+                <div className="mb-8 relative">
                     <AutocompleteInput
-                        options={allMoves}
+                        options={[...allMoves, ...Object.keys(moveTranslations)]}
                         value={searchTerm}
                         onChange={setSearchTerm}
-                        onSelect={handleSelect}
-                        placeholder="Buscar movimiento (ej: Flamethrower)..."
+                        onSelect={(val) => {
+                            // If selected value is a Spanish key, map to English
+                            const englishMove = moveTranslations[val.toLowerCase()] || val;
+                            handleSelect(englishMove);
+                            // Visual feedback: keep spanish name in input but fetch english
+                            if (moveTranslations[val.toLowerCase()]) {
+                                setSearchTerm(val + ` (${englishMove})`);
+                            }
+                        }}
+                        placeholder="Buscar movimiento (ej: Lanzallamas)..."
                         className="w-full bg-black/50 border-white/20 text-lg py-3"
                     />
+                    <div className="absolute right-4 top-4 text-cyber-secondary text-xs font-mono opacity-50 pointer-events-none">
+                        🇺🇸/🇪🇸
+                    </div>
                 </div>
 
                 {loading && (
