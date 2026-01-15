@@ -32,6 +32,20 @@ export const Pokedex: React.FC = () => {
     const [pkmnData, setPkmnData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [viewingMove, setViewingMove] = useState<any>(null);
+    const [moveDetails, setMoveDetails] = useState<Record<string, any>>({});
+
+    useEffect(() => {
+        if (pkmnData && pkmnData.moves) {
+            const topMoves = pkmnData.moves.slice(0, 20);
+            topMoves.forEach((m: any) => {
+                fetchMoveData(m.move.name).then(details => {
+                    if (details) {
+                        setMoveDetails(prev => ({ ...prev, [m.move.name]: details }));
+                    }
+                });
+            });
+        }
+    }, [pkmnData]);
 
     useEffect(() => {
         fetchPokemonList().then(setAllPokemon);
@@ -219,16 +233,33 @@ export const Pokedex: React.FC = () => {
                             <div className="glass-card p-4">
                                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Movimientos Principales</h4>
                                 <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                                    {pkmnData.moves && pkmnData.moves.slice(0, 20).map((m: any) => (
-                                        <button
-                                            key={m.move.name}
-                                            className="text-left text-xs p-2 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center group transition-all"
-                                            onClick={() => handleMoveClick(m.move.name)}
-                                        >
-                                            <span className="capitalize text-gray-300 group-hover:text-cyber-primary">{m.move.name.replace('-', ' ')}</span>
-                                            <span className="opacity-0 group-hover:opacity-100 text-cyber-primary">Info ›</span>
-                                        </button>
-                                    ))}
+                                    {pkmnData.moves && pkmnData.moves.slice(0, 20).map((m: any) => {
+                                        const details = moveDetails[m.move.name];
+                                        return (
+                                            <button 
+                                                key={m.move.name}
+                                                className="text-left text-xs p-2 bg-white/5 hover:bg-white/10 rounded flex justify-between items-center group transition-all"
+                                                onClick={() => handleMoveClick(m.move.name)}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {details && (
+                                                        <>
+                                                            <div className="scale-75 origin-left -mr-2">
+                                                                <TypeBadge type={details.type} size="sm" />
+                                                            </div>
+                                                            {details.damage_class === 'physical' && <span title="Físico" className="text-red-400 font-bold">💥</span>}
+                                                            {details.damage_class === 'special' && <span title="Especial" className="text-blue-400 font-bold">🔮</span>}
+                                                            {details.damage_class === 'status' && <span title="Estado" className="text-gray-400 font-bold">⚪</span>}
+                                                        </>
+                                                    )}
+                                                    <span className="capitalize text-gray-300 group-hover:text-cyber-primary whitespace-nowrap overflow-hidden text-ellipsis max-w-[80px]">
+                                                        {m.move.name.replace('-', ' ')}
+                                                    </span>
+                                                </div>
+                                                <span className="opacity-0 group-hover:opacity-100 text-cyber-primary">Info ›</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
