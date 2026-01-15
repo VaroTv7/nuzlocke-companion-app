@@ -88,7 +88,7 @@ const DEFAULT_STATE: SaveableState = {
         { id: 3, name: 'Cementerio' },
     ],
     notes: '',
-    geminiConfig: { apiKey: '', model: 'gemini-1.5-flash' },
+    geminiConfig: { apiKey: '', model: 'gemini-2.5-flash' },
     aiChatHistory: [],
 };
 

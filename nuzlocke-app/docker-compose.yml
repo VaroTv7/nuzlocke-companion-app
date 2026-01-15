@@ -11,6 +11,11 @@ services:
       - "8085:80"
     depends_on:
       - varo-locke-api
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # Backend - Node.js API for save management
   varo-locke-api:

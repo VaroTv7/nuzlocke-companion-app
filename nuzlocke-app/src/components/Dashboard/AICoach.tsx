@@ -64,7 +64,7 @@ export const AICoach: React.FC = () => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="absolute bottom-16 right-0 w-[350px] md:w-[400px] h-[500px] glass-card flex flex-col border border-white/20 animate-fade-in shadow-2xl rounded-2xl overflow-hidden">
+                <div className="absolute bottom-16 -right-6 md:right-0 w-[90vw] md:w-[400px] h-[60vh] md:h-[500px] glass-card flex flex-col border border-white/20 animate-fade-in shadow-2xl rounded-2xl overflow-hidden z-[80]">
                     {/* Header */}
                     <div className="bg-cyber-purple/20 p-4 border-b border-white/10 flex justify-between items-center">
                         <div className="flex items-center gap-2">
