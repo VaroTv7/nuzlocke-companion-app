@@ -1,5 +1,3 @@
-// typeChart import removed as PkmnType was unused
-
 // Cache for API responses to avoid rate limits
 const cache: Record<string, any> = {};
 
@@ -56,6 +54,7 @@ export const fetchPokemonSpecies = async (name: string): Promise<any> => {
             types: data.types.map((t: any) => t.type.name),
             stats: data.stats.map((s: any) => ({ name: s.stat.name, value: s.base_stat })),
             abilities: data.abilities.map((a: any) => ({ name: a.ability.name, is_hidden: a.is_hidden })),
+            moves: data.moves.map((m: any) => ({ move: m.move })), // [NEW] Map moves for Pokedex
             height: data.height,
             weight: data.weight,
         };
