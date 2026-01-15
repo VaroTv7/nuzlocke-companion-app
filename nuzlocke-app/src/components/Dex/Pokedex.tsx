@@ -6,18 +6,6 @@ import { Search, Activity, Shield, Zap, Wind, User } from 'lucide-react';
 import { TYPE_CHART, TYPES } from '../../utils/typeChart';
 import type { PkmnType } from '../../utils/typeChart';
 
-const TYPE_NAMES_ES: Record<string, string> = {
-    normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'Eléctrico', grass: 'Planta', ice: 'Hielo',
-    fighting: 'Lucha', poison: 'Veneno', ground: 'Tierra', flying: 'Volador', psychic: 'Psíquico', bug: 'Bicho',
-    rock: 'Roca', ghost: 'Fantasma', dragon: 'Dragón', dark: 'Siniestro', steel: 'Acero', fairy: 'Hada',
-};
-
-const TYPE_COLORS: Record<string, string> = {
-    normal: '#A8A878', fire: '#F08030', water: '#6890F0', electric: '#F8D030', grass: '#78C850', ice: '#98D8D8',
-    fighting: '#C03028', poison: '#A040A0', ground: '#E0C068', flying: '#A890F0', psychic: '#F85888', bug: '#A8B820',
-    rock: '#B8A038', ghost: '#705898', dragon: '#7038F8', dark: '#705848', steel: '#B8B8D0', fairy: '#EE99AC',
-};
-
 // Helper for Defensive Matchups
 function getDamageMultiplier(attackerType: PkmnType, defenderTypes: string[]): number {
     let mult = 1;
