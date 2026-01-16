@@ -1,119 +1,89 @@
-# ⚡ VaroLocke Companion App v2.0
+# ⚡ VaroLocke Companion App v2.0.1
 
-Aplicación web progresiva (PWA) diseñada para gestionar tus partidas de **Pokémon Nuzlocke**, optimizada específicamente para cualquier juego de la franquicia.
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-Construida con **React + TypeScript + Vite + TailwindCSS** y un backend ligero en **Node.js**.
+**VaroLocke** es la herramienta definitiva de gestión para tus partidas de **Pokémon Nuzlocke**. Diseñada con una estética **Cyberpunk / Glassmorphism**, ofrece un control total sobre tu equipo, estadísticas y progreso en tiempo real.
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+---
 
 ## ✨ Características Principales
 
 ### 📊 Dashboard Táctico
-- **Contador de Vidas**: Gestión visual de tus 10 vidas.
-- **Medallero**: Seguimiento de progreso por gimnasios.
-- **Equipo Activo**: Vista rápida de tu "Team" actual con niveles y estados.
+- **Seguimiento Real**: Contador de vidas dinámico y medallero interactivo.
+- **Vista de Equipo**: Visualización rápida del nivel, tipos y estado de tus Pokémon activos.
 
-### 💻 Sistema de PC Avanzado
-- **Gestión de Cajas**: Organiza tus Pokémon en cajas, equipo activo o cementerio.
-- **Editor Completo**: Modifica estadísticas, movimientos, objetos, naturaleza y habilidad.
-- **Sprite Automático**: Al escribir la especie, busca automáticamente el sprite oficial.
+### 💻 Sistema de PC "Pro" (Novedades v2.0.1)
+- **Editor de Movimientos Avanzado**:
+    - 🏷️ **Iconos de Tipo**: Identificación visual instantánea.
+    - 💥 **Categorías de Daño**: Diferenciación clara entre Físico, Especial y Estado.
+    - 🔢 **Stats Detallados**: Visualización de PP, Potencia y Precisión.
+    - ❓ **Diccionario de Ataques**: Haz clic en el icono de ayuda para ver la explicación completa del movimiento.
+- **Gestión de Cajas Inteligente**: 
+    - Organización lógica donde el **Equipo** es la base y el almacenamiento empieza en la **Caja 2**.
+    - Evita confusiones de duplicidad entre el equipo y la primera caja.
+- **Auto-Fill de PokeAPI**: Generación automática de sprites, tipos y habilidades al escribir la especie.
 
-### ⚔️ Calculadora de Combate 2.0
-- **Doble Tipo Defensivo**: Selecciona hasta 2 tipos defensores.
-- **Multiplicadores Reales**: Calcula debilidades (x2, x4) y resistencias (x0.5, x0.25, x0).
-- **Traducción al Español**: Nombres de tipos y estados localizados.
+### ⚔️ Combat Tool v2.0
+- **Calculadora de Debilidades**: Soporta doble tipo defensivo con multiplicadores de daño precisos (x4, x2, x0.5, x0.25, x0).
+- **Localización Completa**: Todo en español para una experiencia fluida.
 
-### 💾 Sistema de Guardado Multi-Slot
-- **Backend Node.js**: Sincronización de partidas en servidor local.
-- **Smart Import (NUEVO)**: ⚡ Importa datos desde JSON simplificado.
-- **Guardar Como...**: Clona tu partida actual sin perder progreso.
-- **Exportar/Importar**: Descarga tu partida como archivo `.json` para backups en USB.
+### 💾 Persistencia y Sincronización
+- **Backend Robusto**: Sincronización automática con servidor local mediante Docker.
+- **Smart Import**: Carga masiva de datos mediante JSON (ideal para migrar desde otras herramientas o backups).
+- **Multi-Slot**: Gestiona varias partidas simultáneas sin sobrescribir datos.
 
-## 🚀 Despliegue e Instalación
+---
 
-### Requisitos
+## 🚀 Instalación y Despliegue
+
+### 🛠️ Requisitos
 - Node.js (v18+)
-- Docker & Docker Compose (Recomendado para servidor)
+- Docker y Docker Compose (Recomendado para producción)
 
-### Desarrollo Local
+### 📦 Desarrollo Local
 ```bash
+# Servidor de desarrollo
 cd nuzlocke-app
 npm install
 npm run dev
 ```
 
-### Despliegue en Servidor (Docker)
-Utiliza el script de PowerShell incluido para construir y levantar los contenedores:
+### 🐳 Despliegue con Docker (Servidor)
+Docker expondrá el **Frontend** en el puerto `8085` y la **API** en el `8086`.
 
-```powershell
+```bash
+# Usando script de despliegue
 ./deploy_final.ps1
+
+# O manualmente
+docker compose build
+docker compose up -d
 ```
 
-Esto levantará:
-- **Frontend** en el puerto `8085`
-- **Backend API** en el puerto `8086`
+---
 
-## ⚡ Smart Import (Cómo usar)
-1. Ve al menú de "Partidas Guardadas" (icono carpeta).
-2. Pulsa el botón del rayo (⚡).
-3. Pega tu JSON con el formato (Ejemplo Profesional):
+## ⚡ Formato del Smart Import
+Puedes importar tu equipo pegando un JSON con el siguiente esquema en el menú de partidas guardadas:
 
 ```json
 {
-  "name": "Partida Maestra",
-  "game": "Pokémon Nuzlocke",
-  "team": ["Ignis", "Leviathan", "Sparky", "Spectre", "Mountain", "IQ"],
+  "name": "Mi Partida",
+  "team": ["Ignis"],
   "box_details": {
     "Ignis": {
       "name": "Charizard",
-      "nickname": "Ignis",
       "level": 60,
-      "item": "Carbón",
       "moves": ["Lanzallamas", "Tajo Aéreo", "Pulso Dragón", "Respiro"]
-    },
-    "Leviathan": {
-      "name": "Gyarados",
-      "nickname": "Leviathan",
-      "level": 58,
-      "item": "Agua Mística",
-      "moves": ["Cascada", "Triturar", "Danza Dragón", "Colmillo Hielo"]
-    },
-    "Sparky": {
-      "name": "Jolteon",
-      "nickname": "Sparky",
-      "level": 57,
-      "item": "Imán",
-      "moves": ["Rayo", "Voltiocambio", "Bola Sombra", "Onda Trueno"]
-    },
-    "Spectre": {
-      "name": "Gengar",
-      "nickname": "Spectre",
-      "level": 59,
-      "item": "Lodo Negro",
-      "moves": ["Bola Sombra", "Bomba Lodo", "Brillo Mágico", "Mismo Destino"]
-    },
-    "Mountain": {
-      "name": "Tyranitar",
-      "nickname": "Mountain",
-      "level": 62,
-      "item": "Restos",
-      "moves": ["Roca Afilada", "Triturar", "Terremoto", "Puño Hielo"]
-    },
-    "IQ": {
-      "name": "Alakazam",
-      "nickname": "IQ",
-      "level": 58,
-      "item": "Cuchara Torcida",
-      "moves": ["Psíquico", "Onda Certera", "Recuperación", "Paz Mental"]
     }
   }
 }
 ```
 
-4. ¡Listo! La app generará tu partida.
-
 ---
-*Developed by VaroSobremesa for Project Cobalt Supernova*
+
+*Desarrollado con ❤️ por **VaroSobremesa** para el Proyecto Cobalt Supernova.*
