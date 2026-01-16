@@ -125,8 +125,19 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
     };
 
     const handleSave = () => {
+        let finalBoxId = formData.boxId;
+
+        // Logic enforcement: Team must be boxId 0
+        if (formData.status === 'team') {
+            finalBoxId = 0;
+        } else if (finalBoxId === 0) {
+            // If in box/dead but boxId is 0, default to first available box or 1
+            finalBoxId = boxes.length > 0 ? boxes[0].id : 1;
+        }
+
         const finalData = {
             ...formData,
+            boxId: finalBoxId,
             name: formData.name || formData.species || 'Sin Mote'
         };
 
@@ -300,14 +311,17 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                                 <label className="text-xs text-gray-500 uppercase tracking-wider mb-1 block">Caja</label>
                                 <select
                                     className="cyber-input w-full"
-                                    value={formData.boxId}
+                                    value={formData.status === 'team' ? 0 : (formData.boxId || (boxes[0]?.id || 1))}
                                     onChange={(e) => setFormData({ ...formData, boxId: parseInt(e.target.value) })}
                                     disabled={formData.status === 'team'}
                                 >
-                                    <option value={0}>— Sin asignar —</option>
-                                    {boxes.map(box => (
-                                        <option key={box.id} value={box.id}>{box.name}</option>
-                                    ))}
+                                    {formData.status === 'team' ? (
+                                        <option value={0}>— Sin asignar (Equipo) —</option>
+                                    ) : (
+                                        boxes.map(box => (
+                                            <option key={box.id} value={box.id}>{box.name}</option>
+                                        ))
+                                    )}
                                 </select>
                                 {formData.status === 'team' && (
                                     <p className="text-xs text-gray-600 mt-1">Los Pokémon en equipo no tienen caja asignada</p>
