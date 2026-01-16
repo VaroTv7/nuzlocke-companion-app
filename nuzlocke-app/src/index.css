@@ -7,6 +7,7 @@
 @layer base {
   body {
     @apply bg-cyber-dark text-white font-cyber min-h-screen overflow-x-hidden selection:bg-cyber-primary selection:text-cyber-dark;
+    background-attachment: fixed;
     background-image: 
       radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.15) 0%, transparent 20%),
       radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 20%),
