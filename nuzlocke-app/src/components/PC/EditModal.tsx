@@ -19,7 +19,7 @@ const EMPTY_POKEMON: Pokemon = {
     id: '',
     name: '',
     species: '',
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png',
+    sprite: '',
     types: ['normal'],
     level: 5,
     gender: 'N',
@@ -62,15 +62,17 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
     useEffect(() => {
         if (pokemon) {
             setFormData(pokemon);
+            setCurrentSpeciesId(null);
         } else {
             setFormData({ ...EMPTY_POKEMON, id: '' });
+            setCurrentSpeciesId(null);
         }
     }, [pokemon, isOpen]);
 
     // React to species change to load ID (for selector)
     useEffect(() => {
         const loadId = async () => {
-            if (formData.species && !currentSpeciesId) {
+            if (formData.species) {
                 const data = await fetchPokemonSpecies(formData.species);
                 if (data && data.externalId) {
                     setCurrentSpeciesId(data.externalId);
@@ -79,7 +81,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
         };
         const timer = setTimeout(loadId, 1000);
         return () => clearTimeout(timer);
-    }, [formData.species, currentSpeciesId]);
+    }, [formData.species]); // Removed currentSpeciesId dep to allow updates
 
     const handleAutoFill = async (speciesName: string) => {
         if (!speciesName) return;
