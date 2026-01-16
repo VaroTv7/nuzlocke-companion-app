@@ -67,6 +67,20 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
         }
     }, [pokemon, isOpen]);
 
+    // React to species change to load ID (for selector)
+    useEffect(() => {
+        const loadId = async () => {
+            if (formData.species && !currentSpeciesId) {
+                const data = await fetchPokemonSpecies(formData.species);
+                if (data && data.externalId) {
+                    setCurrentSpeciesId(data.externalId);
+                }
+            }
+        };
+        const timer = setTimeout(loadId, 1000);
+        return () => clearTimeout(timer);
+    }, [formData.species, currentSpeciesId]);
+
     const handleAutoFill = async (speciesName: string) => {
         if (!speciesName) return;
         setLoading(true);
