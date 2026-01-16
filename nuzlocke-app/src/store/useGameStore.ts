@@ -83,8 +83,8 @@ const DEFAULT_STATE: SaveableState = {
         { id: '2', text: 'Solo capturar el primer Pokémon de ruta.' },
     ],
     boxes: [
-        { id: 1, name: 'Caja 1' },
-        { id: 2, name: 'Caja 2' },
+        { id: 1, name: 'Caja 2' },
+        { id: 2, name: 'Caja 3' },
         { id: 3, name: 'Cementerio' },
     ],
     notes: '',
@@ -176,9 +176,12 @@ export const useGameStore = create<GameState>()(
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
             addBox: () => {
-                set((state) => ({
-                    boxes: [...state.boxes, { id: state.boxes.length + 1, name: `Caja ${state.boxes.length + 1}` }]
-                }));
+                set((state) => {
+                    const nextBoxNum = state.boxes.length + 2;
+                    return {
+                        boxes: [...state.boxes, { id: state.boxes.length + 1, name: `Caja ${nextBoxNum}` }]
+                    };
+                });
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
             updateBox: (id, name) => {
@@ -329,25 +332,39 @@ export const useGameStore = create<GameState>()(
         }),
         {
             name: 'varo-locke-storage',
-            version: 2,
+            version: 3,
             migrate: (persistedState: any, version) => {
+                let state = { ...persistedState };
                 if (version < 2) {
-                    return {
-                        ...persistedState,
+                    state = {
+                        ...state,
                         currentSaveId: null,
                         currentSaveName: 'Local',
                         isServerMode: false,
                         isSyncing: false,
-                        boxes: persistedState.boxes || DEFAULT_STATE.boxes,
-                        notes: persistedState.notes || '',
-                        pokemon: (persistedState.pokemon || []).map((p: any) => ({
+                        boxes: state.boxes || DEFAULT_STATE.boxes,
+                        notes: state.notes || '',
+                        pokemon: (state.pokemon || []).map((p: any) => ({
                             ...p,
                             boxId: p.boxId !== undefined ? p.boxId : (p.status === 'team' ? 0 : 1),
                             isShiny: p.isShiny || false
                         }))
                     };
                 }
-                return persistedState;
+                if (version < 3) {
+                    // Rename "Caja 1" to "Caja 2" if it hasn't been changed to something custom
+                    state.boxes = (state.boxes || []).map((b: any) => {
+                        if (b.id === 1 && b.name === 'Caja 1') return { ...b, name: 'Caja 2' };
+                        if (b.id === 2 && b.name === 'Caja 2') return { ...b, name: 'Caja 3' };
+                        return b;
+                    });
+                    // Repair any pokemon with status 'box' but boxId 0
+                    state.pokemon = (state.pokemon || []).map((p: any) => {
+                        if (p.status === 'box' && p.boxId === 0) return { ...p, boxId: 1 };
+                        return p;
+                    });
+                }
+                return state;
             },
         }
     )
