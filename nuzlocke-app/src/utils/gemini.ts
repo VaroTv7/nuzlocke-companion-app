@@ -112,7 +112,7 @@ ${state.boxes.map(b => `- ID ${b.id}: "${b.name}"`).join('\n')}
 REGLAS:
 1. Responde ÚNICAMENTE con el objeto JSON. Sin explicaciones, sin bloques de código, solo el objeto entre llaves {}.
 2. Si el usuario no especifica algo (como naturaleza u objeto), inventa uno coherente o usa valores por defecto.
-3. Si el usuario menciona "Caja 1", recuerda que internamente es boxId: 1. "Caja 2" es boxId: 2, etc. El Equipo es boxId: 0.
+3. Asigna el boxId basándote EXCLUSIVAMENTE en la lista de cajas proporcionada arriba. Busca el nombre que pide el usuario y usa su ID. El Equipo siempre es boxId: 0.
 4. Asegúrate de que los movimientos existan y tengan datos coherentes de PP, potencia (si aplica) y tipo.
 `;
 

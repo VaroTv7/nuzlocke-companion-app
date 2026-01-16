@@ -141,9 +141,12 @@ export const AICoach: React.FC = () => {
                                         <div className="mt-4 p-3 bg-black/60 rounded-lg border border-cyber-purple/30 animate-pulse-slow">
                                             <div className="flex items-center gap-3">
                                                 <img src={pendingPokemon.sprite} alt="" className="w-12 h-12 pixelated bg-white/5 rounded" />
-                                                <div>
+                                                <div className="flex-1">
                                                     <p className="font-bold text-cyber-primary">{pendingPokemon.name}</p>
-                                                    <p className="text-[10px] uppercase text-gray-500">{pendingPokemon.species} Lvl.{pendingPokemon.level}</p>
+                                                    <p className="text-[10px] uppercase text-gray-500">
+                                                        {pendingPokemon.species} Lvl.{pendingPokemon.level} —
+                                                        Destino: <span className="text-cyber-secondary font-bold">{pendingPokemon.boxId === 0 ? 'EQUIPO' : (state.boxes.find(b => b.id === pendingPokemon.boxId)?.name || `Caja ${pendingPokemon.boxId}`)}</span>
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2 mt-4">
