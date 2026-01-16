@@ -1,4 +1,4 @@
-# ⚡ VaroLocke Companion App v2.0.1
+# ⚡ VaroLocke Companion App v2.0.7
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
