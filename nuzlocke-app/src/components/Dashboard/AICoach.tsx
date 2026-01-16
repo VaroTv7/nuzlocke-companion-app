@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
 import { callGemini, callGeminiCommand } from '../../utils/gemini';
+import { fetchPokemonSpecies, fetchMoveData } from '../../utils/pokeapi';
+import type { PkmnType } from '../../utils/typeChart';
 import { HelpCircle, Send, X, Bot, Trash2, Loader2, Check, Ban } from 'lucide-react';
 
 export const AICoach: React.FC = () => {
@@ -43,6 +45,31 @@ export const AICoach: React.FC = () => {
                 );
 
                 if (aiResult && aiResult.species) {
+                    // Hydrate with PokeAPI for accurate sprites and types
+                    const apiData = await fetchPokemonSpecies(aiResult.species);
+                    if (apiData) {
+                        aiResult.species = apiData.name;
+                        aiResult.sprite = apiData.sprite;
+                        aiResult.types = apiData.types as PkmnType[];
+
+                        // Hydrate moves
+                        const hydratedMoves = await Promise.all(aiResult.moves.map(async (m: any) => {
+                            if (!m.name) return m;
+                            const moveData = await fetchMoveData(m.name);
+                            if (moveData) {
+                                return {
+                                    name: moveData.name,
+                                    type: moveData.type as PkmnType,
+                                    power: moveData.power,
+                                    accuracy: moveData.accuracy,
+                                    pp: moveData.pp
+                                };
+                            }
+                            return m;
+                        }));
+                        aiResult.moves = hydratedMoves;
+                    }
+
                     setPendingPokemon(aiResult);
                     setAiChatHistory([...newHistory, {
                         role: 'model',
