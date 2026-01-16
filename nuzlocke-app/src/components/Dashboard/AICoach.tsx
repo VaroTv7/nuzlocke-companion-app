@@ -1,15 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { callGemini } from '../../utils/gemini';
-import { HelpCircle, Send, X, Bot, Trash2, Loader2 } from 'lucide-react';
+import type { Pokemon } from '../../store/useGameStore';
+import { callGemini, callGeminiCommand } from '../../utils/gemini';
+import { HelpCircle, Send, X, Bot, Trash2, Loader2, Check, Ban } from 'lucide-react';
 
 export const AICoach: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [pendingPokemon, setPendingPokemon] = useState<Pokemon | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const state = useGameStore();
-    const { geminiConfig, aiChatHistory, setAiChatHistory, clearAiChatHistory } = state;
+    const { geminiConfig, aiChatHistory, setAiChatHistory, clearAiChatHistory, addPokemon } = state;
+
+    const creationKeywords = ['añade', 'crea', 'pon', 'add', 'create', 'genera', 'generate', 'invoca', 'summon'];
 
     useEffect(() => {
         if (chatEndRef.current) {
@@ -21,6 +25,8 @@ export const AICoach: React.FC = () => {
         if (!message.trim() || !geminiConfig.apiKey) return;
 
         const userMsg = message.trim();
+        const isCreationCommand = creationKeywords.some(kw => userMsg.toLowerCase().startsWith(kw));
+
         setMessage('');
         setLoading(true);
 
@@ -28,16 +34,33 @@ export const AICoach: React.FC = () => {
         setAiChatHistory(newHistory);
 
         try {
-            const response = await callGemini(
-                geminiConfig.apiKey,
-                geminiConfig.model,
-                aiChatHistory,
-                userMsg,
-                state as any
-            );
+            if (isCreationCommand) {
+                const aiResult = await callGeminiCommand(
+                    geminiConfig.apiKey,
+                    geminiConfig.model,
+                    userMsg,
+                    state as any
+                );
 
-            if (response) {
-                setAiChatHistory([...newHistory, response]);
+                if (aiResult && aiResult.species) {
+                    setPendingPokemon(aiResult);
+                    setAiChatHistory([...newHistory, {
+                        role: 'model',
+                        parts: [{ text: `¡He proyectado un ${aiResult.species}! Revisa los detalles y confírmame si quieres que lo teletransporte a tu PC.` }]
+                    }]);
+                }
+            } else {
+                const response = await callGemini(
+                    geminiConfig.apiKey,
+                    geminiConfig.model,
+                    aiChatHistory,
+                    userMsg,
+                    state as any
+                );
+
+                if (response) {
+                    setAiChatHistory([...newHistory, response]);
+                }
             }
         } catch (error: any) {
             const errorMsg = error.message.includes('API Error')
@@ -47,6 +70,25 @@ export const AICoach: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const confirmCreation = () => {
+        if (pendingPokemon) {
+            addPokemon(pendingPokemon);
+            setAiChatHistory([...aiChatHistory, {
+                role: 'model',
+                parts: [{ text: `✅ ¡Teletransporte completado! ${pendingPokemon.name} ya está en tu almacenamiento.` }]
+            }]);
+            setPendingPokemon(null);
+        }
+    };
+
+    const cancelCreation = () => {
+        setPendingPokemon(null);
+        setAiChatHistory([...aiChatHistory, {
+            role: 'model',
+            parts: [{ text: "❌ Operación cancelada. ¿Necesitas ayuda con otra cosa?" }]
+        }]);
     };
 
     return (
@@ -82,6 +124,7 @@ export const AICoach: React.FC = () => {
                             <div className="text-center py-10 space-y-2 opacity-50">
                                 <Bot size={40} className="mx-auto text-cyber-purple mb-4" />
                                 <p className="text-xs font-bold uppercase tracking-tighter italic">"Pregúntame sobre tu equipo o estrategia..."</p>
+                                <p className="text-[10px] text-cyber-secondary italic uppercase mt-2">✨ Prueba: "Añade un Pikachu nivel 20"</p>
                                 {!geminiConfig.apiKey && <p className="text-[10px] text-cyber-danger italic uppercase">⚠️ Falta la API Key en Ajustes</p>}
                             </div>
                         )}
@@ -92,6 +135,33 @@ export const AICoach: React.FC = () => {
                                     : 'bg-white/5 border border-white/10 text-gray-300 rounded-tl-none'
                                     }`}>
                                     {msg.parts[0].text}
+
+                                    {/* Preview Card inside history if it was the last AI message and we have pendingPokemon */}
+                                    {msg.role === 'model' && i === aiChatHistory.length - 1 && pendingPokemon && (
+                                        <div className="mt-4 p-3 bg-black/60 rounded-lg border border-cyber-purple/30 animate-pulse-slow">
+                                            <div className="flex items-center gap-3">
+                                                <img src={pendingPokemon.sprite} alt="" className="w-12 h-12 pixelated bg-white/5 rounded" />
+                                                <div>
+                                                    <p className="font-bold text-cyber-primary">{pendingPokemon.name}</p>
+                                                    <p className="text-[10px] uppercase text-gray-500">{pendingPokemon.species} Lvl.{pendingPokemon.level}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 mt-4">
+                                                <button
+                                                    onClick={confirmCreation}
+                                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-cyber-success/20 hover:bg-cyber-success/40 text-cyber-success text-xs font-bold rounded border border-cyber-success/30 transition-all"
+                                                >
+                                                    <Check size={14} /> ACEPTAR
+                                                </button>
+                                                <button
+                                                    onClick={cancelCreation}
+                                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-cyber-danger/20 hover:bg-cyber-danger/40 text-cyber-danger text-xs font-bold rounded border border-cyber-danger/30 transition-all"
+                                                >
+                                                    <Ban size={14} /> CANCELAR
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -113,13 +183,13 @@ export const AICoach: React.FC = () => {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Dime cómo mejorar mi equipo..."
+                            placeholder="Dime cómo mejorar o añade un Pokémon..."
                             className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm outline-none focus:border-cyber-purple transition-all"
-                            disabled={loading || !geminiConfig.apiKey}
+                            disabled={loading || !geminiConfig.apiKey || !!pendingPokemon}
                         />
                         <button
                             onClick={handleSend}
-                            disabled={loading || !message.trim() || !geminiConfig.apiKey}
+                            disabled={loading || !message.trim() || !geminiConfig.apiKey || !!pendingPokemon}
                             className="p-2 bg-cyber-purple hover:bg-purple-600 disabled:opacity-50 disabled:grayscale transition-all rounded-lg"
                         >
                             <Send size={18} />

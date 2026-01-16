@@ -73,3 +73,70 @@ export const callGemini = async (apiKey: string, model: string, history: any[], 
         throw error;
     }
 };
+
+export const callGeminiCommand = async (apiKey: string, model: string, command: string, state: GameState) => {
+    const prompt = `
+Actúa como un generador de datos JSON para Pokémon. 
+Tu objetivo es transformar el comando del usuario en un objeto JSON que represente a un Pokémon con la siguiente interfaz exacta:
+
+interface Pokemon {
+    id: string; // Genera un UUID aleatorio
+    name: string; // El mote si se especifica, si no la especie
+    species: string; // Capitalizado (ej: Pikachu)
+    sprite: string; // URL: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\${species_lowercased}.png
+    types: PkmnType[]; // Array de strings en minúsculas (ej: ["electric", "steel"])
+    level: number;
+    gender: 'M' | 'F' | 'N';
+    nature: string;
+    ability: string;
+    item: string;
+    status: 'team' | 'box' | 'dead';
+    boxId: number; // 0 para team, 1+ para boxes
+    isShiny: boolean;
+    moves: {
+        name: string;
+        type: PkmnType;
+        power: number | null;
+        accuracy: number | null;
+        pp: number;
+    }[];
+    metLocation: string;
+}
+
+Comando del usuario: "${command}"
+
+CAJAS DISPONIBLES EN LA PARTIDA:
+${state.boxes.map(b => `- ID ${b.id}: "${b.name}"`).join('\n')}
+(ID 0 es siempre el EQUIPO ACTIVO)
+
+REGLAS:
+1. Responde ÚNICAMENTE con el objeto JSON. Sin explicaciones, sin bloques de código, solo el objeto entre llaves {}.
+2. Si el usuario no especifica algo (como naturaleza u objeto), inventa uno coherente o usa valores por defecto.
+3. Si el usuario menciona "Caja 1", recuerda que internamente es boxId: 1. "Caja 2" es boxId: 2, etc. El Equipo es boxId: 0.
+4. Asegúrate de que los movimientos existan y tengan datos coherentes de PP, potencia (si aplica) y tipo.
+`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.1, // Baja temperatura para mayor consistencia
+                }
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || "Error en comando AI");
+
+        const text = data.candidates[0].content.parts[0].text;
+        // Limpiar posible formato markdown si la IA ignora las instrucciones
+        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(jsonStr);
+    } catch (error) {
+        console.error('Error in AI Command:', error);
+        throw error;
+    }
+};
