@@ -135,3 +135,23 @@ export const fetchNatureList = async (): Promise<string[]> => {
         return ['Hardy', 'Lonely', 'Brave', 'Adamant', 'Naughty', 'Bold', 'Docile', 'Relaxed', 'Impish', 'Lax', 'Timid', 'Hasty', 'Serious', 'Jolly', 'Naive', 'Modest', 'Mild', 'Quiet', 'Bashful', 'Rash', 'Calm', 'Gentle', 'Sassy', 'Careful', 'Quirky'];
     }
 }
+
+export const toggleShinyUrl = (url: string, isShiny: boolean): string => {
+    if (!url) return url;
+    const hasShiny = url.includes('/shiny');
+
+    // If matches desired state, return as is
+    if (isShiny && hasShiny) return url;
+    if (!isShiny && !hasShiny) return url;
+
+    // Convert to Shiny
+    if (isShiny) {
+        if (url.includes('/showdown/')) return url.replace('/showdown/', '/showdown/shiny/');
+        if (url.includes('/official-artwork/')) return url.replace('/official-artwork/', '/official-artwork/shiny/');
+        if (url.includes('/home/')) return url.replace('/home/', '/home/shiny/');
+        return url.replace('/pokemon/', '/pokemon/shiny/');
+    }
+
+    // Convert to Normal (remove shiny segment)
+    return url.replace('/shiny/', '/');
+};

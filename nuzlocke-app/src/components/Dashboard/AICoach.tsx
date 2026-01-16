@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
 import { callGemini, callGeminiCommand } from '../../utils/gemini';
-import { fetchPokemonSpecies, fetchMoveData } from '../../utils/pokeapi';
+import { fetchPokemonSpecies, fetchMoveData, toggleShinyUrl } from '../../utils/pokeapi';
 import type { PkmnType } from '../../utils/typeChart';
 import { HelpCircle, Send, X, Bot, Trash2, Loader2, Check, Ban } from 'lucide-react';
 
@@ -49,7 +49,8 @@ export const AICoach: React.FC = () => {
                     const apiData = await fetchPokemonSpecies(aiResult.species);
                     if (apiData) {
                         aiResult.species = apiData.name;
-                        aiResult.sprite = apiData.sprite;
+                        // Use helper to set correct shiny sprite immediately
+                        aiResult.sprite = toggleShinyUrl(apiData.sprite, aiResult.isShiny);
                         aiResult.types = apiData.types as PkmnType[];
 
                         // Hydrate moves

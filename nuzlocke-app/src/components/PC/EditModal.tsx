@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
-import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList } from '../../utils/pokeapi';
+import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList, toggleShinyUrl } from '../../utils/pokeapi';
 import type { PkmnType } from '../../utils/typeChart';
 import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle, Trash2 } from 'lucide-react';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
@@ -146,17 +146,10 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
     };
 
     // Correct Sprite URL for Shiny if needed
-    // Logic: If isShiny, try to replace regex in URL or use known pattern
     const getDisplaySprite = () => {
         if (!formData.sprite) return null;
-        if (formData.isShiny && !formData.sprite.includes('shiny')) {
-            return formData.sprite.replace('/pokemon/', '/pokemon/shiny/');
-        }
-        if (!formData.isShiny && formData.sprite.includes('shiny')) {
-            return formData.sprite.replace('/pokemon/shiny/', '/pokemon/');
-        }
-        return formData.sprite;
-    }
+        return toggleShinyUrl(formData.sprite, formData.isShiny);
+    };
 
     if (!isOpen) return null;
 
@@ -190,7 +183,14 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                                 {loading && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-cyber-primary animate-pulse font-bold">CARGANDO...</div>}
 
                                 <button
-                                    onClick={() => setFormData({ ...formData, isShiny: !formData.isShiny })}
+                                    onClick={() => {
+                                        const newShinyState = !formData.isShiny;
+                                        setFormData({
+                                            ...formData,
+                                            isShiny: newShinyState,
+                                            sprite: toggleShinyUrl(formData.sprite, newShinyState)
+                                        });
+                                    }}
                                     className="absolute bottom-2 right-2 p-2 rounded-full bg-black/50 hover:bg-cyber-warning hover:text-black transition-colors"
                                     title="Alternar Shiny"
                                 >
