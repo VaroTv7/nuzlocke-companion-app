@@ -155,3 +155,20 @@ export const toggleShinyUrl = (url: string, isShiny: boolean): string => {
     // Convert to Normal (remove shiny segment)
     return url.replace('/shiny/', '/');
 };
+
+export const getSpriteUrl = (id: number, type: 'default' | 'home' | 'official-artwork' | 'showdown' | 'animated-gen5', isShiny: boolean): string => {
+    const baseUrl = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+
+    switch (type) {
+        case 'home':
+            return `${baseUrl}/other/home/${isShiny ? 'shiny/' : ''}${id}.png`;
+        case 'official-artwork':
+            return `${baseUrl}/other/official-artwork/${isShiny ? 'shiny/' : ''}${id}.png`;
+        case 'showdown':
+            return `${baseUrl}/other/showdown/${isShiny ? 'shiny/' : ''}${id}.gif`;
+        case 'animated-gen5':
+            return `${baseUrl}/versions/generation-v/black-white/animated/${isShiny ? 'shiny/' : ''}${id}.gif`;
+        default: // default
+            return `${baseUrl}/${isShiny ? 'shiny/' : ''}${id}.png`;
+    }
+};

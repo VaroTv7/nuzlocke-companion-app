@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
-import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList, toggleShinyUrl } from '../../utils/pokeapi';
+import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList, toggleShinyUrl, getSpriteUrl } from '../../utils/pokeapi';
 import type { PkmnType } from '../../utils/typeChart';
-import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle, Trash2 } from 'lucide-react';
+import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle, Trash2, Image as ImageIcon, Monitor, Gamepad2, Ghost } from 'lucide-react';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 
@@ -43,6 +43,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
     const [formData, setFormData] = useState<Pokemon>(EMPTY_POKEMON);
     const [loading, setLoading] = useState(false);
     const [viewingMove, setViewingMove] = useState<any>(null);
+    const [currentSpeciesId, setCurrentSpeciesId] = useState<number | null>(null);
 
     // Lists for autocomplete
     const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
@@ -72,11 +73,17 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
         try {
             const data = await fetchPokemonSpecies(speciesName);
             if (data) {
+                setCurrentSpeciesId(data.externalId);
+
+                // Fix: Ensure ability is a string, not object
+                const abilityName = (data.abilities && data.abilities.length > 0) ? data.abilities[0].name : '';
+
                 setFormData(prev => ({
                     ...prev,
                     species: data.name,
                     types: data.types.map((t: string) => t as PkmnType),
-                    sprite: data.sprite // PokeAPI usually handles shiny via a different URL prop, but for now standard
+                    sprite: data.sprite,
+                    ability: abilityName // FORCE STRING
                 }));
             }
         } finally {
@@ -197,6 +204,42 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                                     <Star size={16} className={formData.isShiny ? 'fill-cyber-warning text-cyber-warning' : 'text-gray-500'} />
                                 </button>
                             </div>
+
+                            {/* Sprite Selector */}
+                            {currentSpeciesId && (
+                                <div className="flex gap-2 p-2 bg-black/40 rounded-lg border border-white/5 overflow-x-auto max-w-full">
+                                    <button
+                                        onClick={() => setFormData({ ...formData, sprite: getSpriteUrl(currentSpeciesId, 'default', formData.isShiny) })}
+                                        className="p-1 hover:bg-white/10 rounded" title="Pixel Default"
+                                    >
+                                        <Gamepad2 size={16} className="text-gray-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, sprite: getSpriteUrl(currentSpeciesId, 'official-artwork', formData.isShiny) })}
+                                        className="p-1 hover:bg-white/10 rounded" title="Official Art"
+                                    >
+                                        <ImageIcon size={16} className="text-purple-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, sprite: getSpriteUrl(currentSpeciesId, 'showdown', formData.isShiny) })}
+                                        className="p-1 hover:bg-white/10 rounded" title="Showdown (Animated)"
+                                    >
+                                        <Sword size={16} className="text-red-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, sprite: getSpriteUrl(currentSpeciesId, 'home', formData.isShiny) })}
+                                        className="p-1 hover:bg-white/10 rounded" title="Home 3D"
+                                    >
+                                        <Monitor size={16} className="text-blue-400" />
+                                    </button>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, sprite: getSpriteUrl(currentSpeciesId, 'animated-gen5', formData.isShiny) })}
+                                        className="p-1 hover:bg-white/10 rounded" title="Gen 5 Animated"
+                                    >
+                                        <Ghost size={16} className="text-green-400" />
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="flex gap-1 w-full justify-center flex-wrap">
                                 {formData.types.map(t => (

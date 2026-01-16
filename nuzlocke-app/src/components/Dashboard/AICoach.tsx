@@ -53,6 +53,11 @@ export const AICoach: React.FC = () => {
                         aiResult.sprite = toggleShinyUrl(apiData.sprite, aiResult.isShiny);
                         aiResult.types = apiData.types as PkmnType[];
 
+                        // Ensure ability is valid string
+                        if (apiData.abilities && apiData.abilities.length > 0) {
+                            aiResult.ability = apiData.abilities[0].name;
+                        }
+
                         // Hydrate moves
                         const hydratedMoves = await Promise.all(aiResult.moves.map(async (m: any) => {
                             if (!m.name) return m;
