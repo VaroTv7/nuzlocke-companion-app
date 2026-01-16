@@ -72,13 +72,51 @@ Puedes importar tu equipo pegando un JSON con el siguiente esquema en el menú d
 
 ```json
 {
-  "name": "Mi Partida",
-  "team": ["Ignis"],
+  "name": "Partida Maestra",
+  "game": "Pokémon Nuzlocke",
+  "team": ["Ignis", "Leviathan", "Sparky", "Spectre", "Mountain", "IQ"],
   "box_details": {
     "Ignis": {
       "name": "Charizard",
+      "nickname": "Ignis",
       "level": 60,
+      "item": "Carbón",
       "moves": ["Lanzallamas", "Tajo Aéreo", "Pulso Dragón", "Respiro"]
+    },
+    "Leviathan": {
+      "name": "Gyarados",
+      "nickname": "Leviathan",
+      "level": 58,
+      "item": "Agua Mística",
+      "moves": ["Cascada", "Triturar", "Danza Dragón", "Colmillo Hielo"]
+    },
+    "Sparky": {
+      "name": "Jolteon",
+      "nickname": "Sparky",
+      "level": 57,
+      "item": "Imán",
+      "moves": ["Rayo", "Voltiocambio", "Bola Sombra", "Onda Trueno"]
+    },
+    "Spectre": {
+      "name": "Gengar",
+      "nickname": "Spectre",
+      "level": 59,
+      "item": "Lodo Negro",
+      "moves": ["Bola Sombra", "Bomba Lodo", "Brillo Mágico", "Mismo Destino"]
+    },
+    "Mountain": {
+      "name": "Tyranitar",
+      "nickname": "Mountain",
+      "level": 62,
+      "item": "Restos",
+      "moves": ["Roca Afilada", "Triturar", "Terremoto", "Puño Hielo"]
+    },
+    "IQ": {
+      "name": "Alakazam",
+      "nickname": "IQ",
+      "level": 58,
+      "item": "Cuchara Torcida",
+      "moves": ["Psíquico", "Onda Certera", "Recuperación", "Paz Mental"]
     }
   }
 }
