@@ -37,6 +37,14 @@
 - **Smart Import**: Carga masiva de datos mediante JSON (ideal para migrar desde otras herramientas o backups).
 - **Multi-Slot**: Gestiona varias partidas simultáneas sin sobrescribir datos.
 
+### 🔒 Seguridad y Persistencia (Novedades v2.0.7)
+- **Base de Datos Persistente**: Corrección crítica implementada. La base de datos `saves.db` ahora vive obligatoriamente en el volumen seguro `/app/saves`. Tus partidas sobrevivirán a reinicios, actualizaciones y apagones.
+- **Liberación Segura**: Nuevo botón de "Liberar" en el editor con protocolo de confirmación para evitar accidentes.
+
+### 🎨 UI/UX y Estética
+- **Coach AI Legible**: Chat rediseñado con alto contraste (texto blanco sobre púrpura neón) para mejor lectura.
+- **Logic Shiny v2**: Detección inteligente de variantes shiny en todas las fuentes de sprites (Showdown, Official, Home).
+
 ---
 
 ## 🚀 Instalación y Despliegue
@@ -124,4 +132,4 @@ Puedes importar tu equipo pegando un JSON con el siguiente esquema en el menú d
 
 ---
 
-*Desarrollado con ❤️ por **VaroSobremesa** para el Proyecto Cobalt Supernova.*
+*Desarrollado por **ElVarto**.*
