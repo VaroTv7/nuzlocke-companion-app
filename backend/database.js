@@ -2,8 +2,8 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'saves.db');
 const SAVES_DIR = process.env.SAVES_DIR || path.join(__dirname, 'saves');
+const DB_PATH = path.join(SAVES_DIR, 'saves.db');
 const MIGRATED_DIR = path.join(SAVES_DIR, '..', 'migrated_saves');
 
 // Ensure directories exist
