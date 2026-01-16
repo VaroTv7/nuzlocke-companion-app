@@ -7,18 +7,7 @@ import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle } from 'lucide-
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 
-// UUID generator that works in non-secure contexts (HTTP)
-const generateUUID = (): string => {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
-    }
-    // Fallback for HTTP contexts
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
+// EditModal.tsx
 
 interface Props {
     isOpen: boolean;
@@ -73,7 +62,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
         if (pokemon) {
             setFormData(pokemon);
         } else {
-            setFormData({ ...EMPTY_POKEMON, id: generateUUID() });
+            setFormData({ ...EMPTY_POKEMON, id: '' });
         }
     }, [pokemon, isOpen]);
 
@@ -137,8 +126,7 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
 
         const finalData = {
             ...formData,
-            boxId: finalBoxId,
-            name: formData.name || formData.species || 'Sin Mote'
+            boxId: finalBoxId
         };
 
         if (pokemon && pokemon.id) { // Ensure ID exists

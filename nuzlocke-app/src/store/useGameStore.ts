@@ -3,6 +3,18 @@ import { persist } from 'zustand/middleware';
 import type { PkmnType } from '../utils/typeChart';
 import { fetchSave, createSave, updateSave, deleteSave as apiDeleteSave } from '../utils/api';
 
+// UUID generator for storage
+const generateUUID = (): string => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
 export interface Pokemon {
     id: string;
     name: string;
@@ -124,7 +136,14 @@ export const useGameStore = create<GameState>()(
             isSyncing: false,
 
             addPokemon: (p) => {
-                set((state) => ({ pokemon: [...state.pokemon, p] }));
+                const newPokemon = {
+                    ...p,
+                    id: p.id || generateUUID(),
+                    name: p.name || p.species || 'Sin Mote',
+                    boxId: p.boxId !== undefined ? p.boxId : (get().boxes[0]?.id || 1),
+                    status: p.status || (p.status === 'dead' ? 'dead' : (p.boxId === 0 ? 'team' : 'box'))
+                };
+                set((state) => ({ pokemon: [...state.pokemon, newPokemon] }));
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
             updatePokemon: (id, updates) => {
