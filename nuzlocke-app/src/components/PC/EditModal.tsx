@@ -3,7 +3,7 @@ import { useGameStore } from '../../store/useGameStore';
 import type { Pokemon } from '../../store/useGameStore';
 import { fetchPokemonSpecies, fetchMoveData, fetchPokemonList, fetchMoveList, fetchAbilityList, fetchNatureList } from '../../utils/pokeapi';
 import type { PkmnType } from '../../utils/typeChart';
-import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle } from 'lucide-react';
+import { X, Save, Sparkles, Sword, Star, Zap, Shield, HelpCircle, Trash2 } from 'lucide-react';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import { TypeBadge } from '../Shared/TypeBadge';
 
@@ -39,7 +39,7 @@ const EMPTY_POKEMON: Pokemon = {
 };
 
 export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
-    const { addPokemon, updatePokemon, boxes } = useGameStore();
+    const { addPokemon, updatePokemon, removePokemon, boxes } = useGameStore();
     const [formData, setFormData] = useState<Pokemon>(EMPTY_POKEMON);
     const [loading, setLoading] = useState(false);
     const [viewingMove, setViewingMove] = useState<any>(null);
@@ -135,6 +135,14 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
             addPokemon(finalData);
         }
         onClose();
+    };
+
+    const handleDelete = () => {
+        if (!pokemon || !pokemon.id) return;
+        if (confirm('¿Estás seguro de que quieres liberar a este Pokémon? Esta acción no se puede deshacer.')) {
+            removePokemon(pokemon.id);
+            onClose();
+        }
     };
 
     // Correct Sprite URL for Shiny if needed
@@ -375,67 +383,77 @@ export const EditModal: React.FC<Props> = ({ isOpen, onClose, pokemon }) => {
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-white/10 bg-black/20 flex justify-end gap-4 rounded-b-2xl">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 rounded-lg font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                        CANCELAR
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        className="px-8 py-2 rounded-lg font-bold bg-cyber-primary text-black hover:bg-cyber-primary/80 shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all flex items-center gap-2"
-                    >
-                        <Save size={18} /> GUARDAR
-                    </button>
+                <div className="p-6 border-t border-white/10 bg-black/20 flex justify-between items-center rounded-b-2xl">
+                    {pokemon && (
+                        <button
+                            onClick={handleDelete}
+                            className="px-4 py-2 rounded-lg font-bold text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/50 transition-all flex items-center gap-2"
+                        >
+                            <Trash2 size={16} /> LIBERAR
+                        </button>
+                    )}
+                    <div className="flex gap-4 ml-auto">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2 rounded-lg font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            CANCELAR
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="px-8 py-2 rounded-lg font-bold bg-cyber-primary text-black hover:bg-cyber-primary/80 shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all flex items-center gap-2"
+                        >
+                            <Save size={18} /> GUARDAR
+                        </button>
+                    </div>
+
                 </div>
 
-            </div>
+                {/* Move Details Modal (Explicación) */}
+                {viewingMove && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[110] animate-fade-in" onClick={() => setViewingMove(null)}>
+                        <div className="glass-panel w-full max-w-md p-6 relative border border-white/20" onClick={e => e.stopPropagation()}>
+                            <button
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                                onClick={() => setViewingMove(null)}
+                            >
+                                ✕
+                            </button>
 
-            {/* Move Details Modal (Explicación) */}
-            {viewingMove && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[110] animate-fade-in" onClick={() => setViewingMove(null)}>
-                    <div className="glass-panel w-full max-w-md p-6 relative border border-white/20" onClick={e => e.stopPropagation()}>
-                        <button
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                            onClick={() => setViewingMove(null)}
-                        >
-                            ✕
-                        </button>
-
-                        <div className="flex items-center gap-3 mb-4">
-                            <TypeBadge type={viewingMove.type} />
-                            <h3 className="text-xl font-bold capitalize text-white">{viewingMove.name}</h3>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-3 gap-2 text-center">
-                                <div className="bg-white/5 p-2 rounded">
-                                    <span className="block text-xs text-gray-500 uppercase">Poder</span>
-                                    <span className="text-lg font-bold text-cyber-warning">{viewingMove.power || '-'}</span>
-                                </div>
-                                <div className="bg-white/5 p-2 rounded">
-                                    <span className="block text-xs text-gray-500 uppercase">Precisión</span>
-                                    <span className="text-lg font-bold text-cyber-primary">{viewingMove.accuracy || '-'}%</span>
-                                </div>
-                                <div className="bg-white/5 p-2 rounded">
-                                    <span className="block text-xs text-gray-500 uppercase">PP</span>
-                                    <span className="text-lg font-bold text-white">{viewingMove.pp}</span>
-                                </div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <TypeBadge type={viewingMove.type} />
+                                <h3 className="text-xl font-bold capitalize text-white">{viewingMove.name}</h3>
                             </div>
 
-                            <div className="bg-white/5 p-3 rounded text-sm text-gray-300 leading-relaxed italic border-l-2 border-cyber-primary">
-                                "{viewingMove.description}"
-                            </div>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-white/5 p-2 rounded">
+                                        <span className="block text-xs text-gray-500 uppercase">Poder</span>
+                                        <span className="text-lg font-bold text-cyber-warning">{viewingMove.power || '-'}</span>
+                                    </div>
+                                    <div className="bg-white/5 p-2 rounded">
+                                        <span className="block text-xs text-gray-500 uppercase">Precisión</span>
+                                        <span className="text-lg font-bold text-cyber-primary">{viewingMove.accuracy || '-'}%</span>
+                                    </div>
+                                    <div className="bg-white/5 p-2 rounded">
+                                        <span className="block text-xs text-gray-500 uppercase">PP</span>
+                                        <span className="text-lg font-bold text-white">{viewingMove.pp}</span>
+                                    </div>
+                                </div>
 
-                            <div className="flex justify-between items-center text-xs text-gray-500 uppercase mt-2">
-                                <span>Clase: {viewingMove.damage_class}</span>
-                                <span>{viewingMove.originalName}</span>
+                                <div className="bg-white/5 p-3 rounded text-sm text-gray-300 leading-relaxed italic border-l-2 border-cyber-primary">
+                                    "{viewingMove.description}"
+                                </div>
+
+                                <div className="flex justify-between items-center text-xs text-gray-500 uppercase mt-2">
+                                    <span>Clase: {viewingMove.damage_class}</span>
+                                    <span>{viewingMove.originalName}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };

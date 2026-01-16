@@ -158,8 +158,8 @@ export const AICoach: React.FC = () => {
                         {aiChatHistory.map((msg, i) => (
                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed ${msg.role === 'user'
-                                    ? 'bg-cyber-purple/20 border border-cyber-purple/40 text-white rounded-tr-none'
-                                    : 'bg-white/5 border border-white/10 text-gray-300 rounded-tl-none'
+                                    ? 'bg-cyber-purple text-white font-bold rounded-tr-none shadow-[0_0_15px_rgba(188,19,254,0.3)]'
+                                    : 'bg-white/10 border border-white/20 text-gray-200 rounded-tl-none backdrop-blur-sm'
                                     }`}>
                                     {msg.parts[0].text}
 
