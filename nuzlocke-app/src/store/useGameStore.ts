@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PkmnType } from '../utils/typeChart';
+import type { GameMode } from '../utils/gameRegistry';
 import { fetchSave, createSave, updateSave, deleteSave as apiDeleteSave } from '../utils/api';
 
 // UUID generator for storage
@@ -37,12 +38,24 @@ export interface Pokemon {
         pp: number;
     }[];
     metLocation: string;
+    // Gen-specific mechanics
+    teraType?: PkmnType;
+    dynamaxLevel?: number;
+    canGigantamax?: boolean;
+    megaStone?: string;
+    zCrystal?: string;
+}
+
+// Dynamic badge system
+interface BadgeState {
+    total: number;
+    earned: boolean[];
 }
 
 // State that gets saved
 interface SaveableState {
     lives: number;
-    badges: boolean[];
+    badges: BadgeState;
     objectives: { id: string; text: string; completed: boolean }[];
     pokemon: Pokemon[];
     rules: { id: string; text: string }[];
@@ -50,6 +63,9 @@ interface SaveableState {
     notes: string;
     geminiConfig: { apiKey: string; model: string };
     aiChatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
+    // New fields
+    gameMode: GameMode;
+    selectedGame: string;
 }
 
 export interface GameState extends SaveableState {
@@ -65,6 +81,7 @@ export interface GameState extends SaveableState {
     removePokemon: (id: string) => void;
     setLives: (n: number) => void;
     toggleBadge: (index: number) => void;
+    setBadgeCount: (count: number) => void;
     toggleObjective: (id: string) => void;
     setNotes: (text: string) => void;
     setGeminiConfig: (config: { apiKey: string; model: string }) => void;
@@ -72,6 +89,8 @@ export interface GameState extends SaveableState {
     clearAiChatHistory: () => void;
     addBox: () => void;
     updateBox: (id: number, name: string) => void;
+    setGameMode: (mode: GameMode) => void;
+    setSelectedGame: (gameId: string) => void;
 
     // Server sync actions
     loadFromServer: (saveId: string) => Promise<boolean>;
@@ -84,7 +103,7 @@ export interface GameState extends SaveableState {
 
 const DEFAULT_STATE: SaveableState = {
     lives: 10,
-    badges: [false, false, false, false, false, false, false, false],
+    badges: { total: 8, earned: [false, false, false, false, false, false, false, false] },
     objectives: [
         { id: '1', text: 'Derrotar al Alto Mando', completed: false },
         { id: '2', text: 'Completar la Pokédex Regional', completed: false },
@@ -102,6 +121,8 @@ const DEFAULT_STATE: SaveableState = {
     notes: '',
     geminiConfig: { apiKey: '', model: 'gemini-2.5-flash' },
     aiChatHistory: [],
+    gameMode: 'nuzlocke',
+    selectedGame: 'scarlet-violet',
 };
 
 // Helper to extract saveable state
@@ -115,6 +136,8 @@ const getSaveableState = (state: GameState): SaveableState => ({
     notes: state.notes,
     geminiConfig: state.geminiConfig,
     aiChatHistory: state.aiChatHistory,
+    gameMode: state.gameMode,
+    selectedGame: state.selectedGame,
 });
 
 // Debounced auto-save
@@ -164,9 +187,21 @@ export const useGameStore = create<GameState>()(
             },
             toggleBadge: (idx) => {
                 set((state) => {
-                    const newBadges = [...state.badges];
-                    newBadges[idx] = !newBadges[idx];
-                    return { badges: newBadges };
+                    const newEarned = [...state.badges.earned];
+                    if (idx < newEarned.length) {
+                        newEarned[idx] = !newEarned[idx];
+                    }
+                    return { badges: { ...state.badges, earned: newEarned } };
+                });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            setBadgeCount: (count) => {
+                set((state) => {
+                    const currentEarned = state.badges.earned;
+                    const newEarned = Array.from({ length: count }, (_, i) =>
+                        i < currentEarned.length ? currentEarned[i] : false
+                    );
+                    return { badges: { total: count, earned: newEarned } };
                 });
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
@@ -209,6 +244,14 @@ export const useGameStore = create<GameState>()(
                 }));
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
+            setGameMode: (mode) => {
+                set({ gameMode: mode });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            setSelectedGame: (gameId) => {
+                set({ selectedGame: gameId });
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
 
             // Server sync actions
             loadFromServer: async (saveId: string) => {
@@ -216,11 +259,20 @@ export const useGameStore = create<GameState>()(
                 try {
                     const data = await fetchSave(saveId);
                     if (data && data.state) {
-                        // Ensure badges array is valid (repair for bad imports)
                         const repairedState = { ...data.state };
-                        if (!repairedState.badges || !Array.isArray(repairedState.badges) || repairedState.badges.length !== 8) {
-                            repairedState.badges = [false, false, false, false, false, false, false, false];
+                        // Migrate old boolean[] badges -> BadgeState
+                        if (Array.isArray(repairedState.badges)) {
+                            repairedState.badges = {
+                                total: repairedState.badges.length,
+                                earned: repairedState.badges,
+                            };
                         }
+                        if (!repairedState.badges || !repairedState.badges.earned) {
+                            repairedState.badges = DEFAULT_STATE.badges;
+                        }
+                        // Ensure new fields have defaults
+                        if (!repairedState.gameMode) repairedState.gameMode = 'nuzlocke';
+                        if (!repairedState.selectedGame) repairedState.selectedGame = 'scarlet-violet';
 
                         set({
                             ...repairedState,
@@ -288,7 +340,6 @@ export const useGameStore = create<GameState>()(
                 try {
                     const success = await apiDeleteSave(saveId);
                     if (success && get().currentSaveId === saveId) {
-                        // Reset to default if we deleted current save
                         set({
                             ...DEFAULT_STATE,
                             currentSaveId: null,
@@ -321,10 +372,10 @@ export const useGameStore = create<GameState>()(
                         id: crypto.randomUUID(),
                         name: details.nickname || species,
                         species: species,
-                        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${species.toLowerCase().replace(/ /g, '-')}.png`, // Placeholder, will fix/update in UI if needed or via API later
-                        types: [], // UI/API will fill this
+                        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${species.toLowerCase().replace(/ /g, '-')}.png`,
+                        types: [],
                         level: details.level || 5,
-                        gender: 'N',
+                        gender: 'N' as const,
                         nature: 'Docile',
                         ability: '',
                         item: details.item || '',
@@ -333,7 +384,7 @@ export const useGameStore = create<GameState>()(
                         isShiny: false,
                         moves: (details.moves || []).map((m: string) => ({
                             name: m,
-                            type: 'normal',
+                            type: 'normal' as PkmnType,
                             power: null,
                             accuracy: null,
                             pp: 0
@@ -350,10 +401,11 @@ export const useGameStore = create<GameState>()(
             },
         }),
         {
-            name: 'varo-locke-storage',
-            version: 3,
+            name: 'varo-pokemon-storage',
+            version: 4,
             migrate: (persistedState: any, version) => {
                 let state = { ...persistedState };
+
                 if (version < 2) {
                     state = {
                         ...state,
@@ -370,19 +422,43 @@ export const useGameStore = create<GameState>()(
                         }))
                     };
                 }
+
                 if (version < 3) {
-                    // Rename "Caja 1" to "Caja 2" if it hasn't been changed to something custom
                     state.boxes = (state.boxes || []).map((b: any) => {
                         if (b.id === 1 && b.name === 'Caja 1') return { ...b, name: 'Caja 2' };
                         if (b.id === 2 && b.name === 'Caja 2') return { ...b, name: 'Caja 3' };
                         return b;
                     });
-                    // Repair any pokemon with status 'box' but boxId 0
                     state.pokemon = (state.pokemon || []).map((p: any) => {
                         if (p.status === 'box' && p.boxId === 0) return { ...p, boxId: 1 };
                         return p;
                     });
                 }
+
+                if (version < 4) {
+                    // Migrate badges from boolean[] to BadgeState
+                    if (Array.isArray(state.badges)) {
+                        state.badges = {
+                            total: state.badges.length || 8,
+                            earned: state.badges,
+                        };
+                    } else if (!state.badges || !state.badges.earned) {
+                        state.badges = DEFAULT_STATE.badges;
+                    }
+                    // Add new fields with defaults
+                    state.gameMode = state.gameMode || 'nuzlocke';
+                    state.selectedGame = state.selectedGame || 'scarlet-violet';
+                    // Ensure all Pokemon have new optional fields
+                    state.pokemon = (state.pokemon || []).map((p: any) => ({
+                        ...p,
+                        teraType: p.teraType || undefined,
+                        dynamaxLevel: p.dynamaxLevel || undefined,
+                        canGigantamax: p.canGigantamax || undefined,
+                        megaStone: p.megaStone || undefined,
+                        zCrystal: p.zCrystal || undefined,
+                    }));
+                }
+
                 return state;
             },
         }

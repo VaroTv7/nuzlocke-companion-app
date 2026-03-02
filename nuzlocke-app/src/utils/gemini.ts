@@ -5,35 +5,43 @@ export const getGeminiContext = (state: GameState) => {
     const box = state.pokemon.filter(p => p.status === 'box');
     const dead = state.pokemon.filter(p => p.status === 'dead');
 
+    const earnedBadges = state.badges.earned.filter(b => b).length;
+    const isNuzlocke = state.gameMode === 'nuzlocke';
+    const isCompetitive = state.gameMode === 'competitive';
+
+    const modeDesc = isNuzlocke
+        ? 'un experto estratega de Nuzlockes. Cada decisión importa, porque las muertes son permanentes.'
+        : isCompetitive
+            ? 'un analista competitivo de Pokémon. Te especializas en teambuilding, tier lists, y matchups del metagame.'
+            : 'un companion general de Pokémon. Ayudas con estrategia, datos, debilidades, y cualquier duda sobre Pokémon.';
+
     return `
-ERES: COACH VARO AI, un experto entrenador Pokémon y estratega de Nuzlockes.
-TU OBJETIVO: Ayudar al usuario a ganar su Nuzlocke con consejos tácticos, análisis de equipo y recomendaciones de movimientos.
+ERES: VARO AI, ${modeDesc}
+MODO: ${state.gameMode.toUpperCase()} | JUEGO: ${state.selectedGame}
 
-ESTADO ACTUAL DE LA PARTIDA:
-- Vidas restantes: ${state.lives}
-- Medallas: ${state.badges.filter(b => b).length}/8
-- Muertes: ${dead.length} (${dead.map(p => p.name || p.species).join(', ') || 'Ninguna'})
+ESTADO ACTUAL:
+${isNuzlocke ? `- Vidas restantes: ${state.lives}\n- Muertes: ${dead.length} (${dead.map(p => p.name || p.species).join(', ') || 'Ninguna'})` : ''}
+- Medallas: ${earnedBadges}/${state.badges.total}
 
-EQUIPO ACTIVO (6 Pokémon):
-${team.map(p => `- ${p.name} (${p.species}): Nivel ${p.level}, Tipos: ${p.types.join('/')}, Habilidad: ${p.ability}, Objeto: ${p.item || 'Ninguno'}. Ataques: ${p.moves.map(m => m.name).join(', ')}`).join('\n') || 'Equipo vacío'}
+EQUIPO ACTIVO:
+${team.map(p => `- ${p.name} (${p.species}): Lvl ${p.level}, Tipos: ${p.types.join('/')}, Habilidad: ${p.ability}, Objeto: ${p.item || 'Ninguno'}${p.teraType ? `, Tera: ${p.teraType}` : ''}. Ataques: ${p.moves.map(m => m.name).join(', ')}`).join('\n') || 'Equipo vacío'}
 
-RESERVA EN PC (Cajas):
+RESERVA EN PC:
 ${box.map(p => `- ${p.species} (Lvl ${p.level}, ${p.types.join('/')})`).join('\n') || 'PC vacío'}
 
-REGLAS ACTIVAS:
-${state.rules.map(r => `- ${r.text}`).join('\n')}
+${isNuzlocke ? `REGLAS ACTIVAS:\n${state.rules.map(r => `- ${r.text}`).join('\n')}` : ''}
 
-OBJETIVOS ACTUALES:
-${state.objectives.map(o => `- ${o.text} (${o.completed ? 'Completado' : 'Pendiente'})`).join('\n')}
+OBJETIVOS:
+${state.objectives.map(o => `- ${o.text} (${o.completed ? '✅' : '⬜'})`).join('\n') || 'Sin objetivos'}
 
-NOTAS DEL ENTRENADOR:
-${state.notes || 'Sin notas'}
+NOTAS: ${state.notes || 'Sin notas'}
 
 INSTRUCCIONES:
-1. Responde de forma breve pero estratégica.
-2. Usa un tono motivador pero serio (estilo entrenador Pro).
-3. Ten en cuenta las debilidades de tipos del equipo activo.
-4. Si el usuario pregunta qué mejorar, sugiere cambios del PC o de ataques.
+1. Responde de forma breve pero estratégica. Máximo 3 párrafos.
+2. Usa un tono motivador pero profesional.
+3. Ten en cuenta las debilidades y coberturas del equipo.
+4. Sugiere mejoras concretas (cambios de Pokémon del PC, cambios de ataques, objetos).
+5. Responde siempre en español.
 `;
 };
 

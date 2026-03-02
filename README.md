@@ -1,135 +1,118 @@
-# ⚡ VaroLocke Companion App v2.0.7
+# VaroPokemon CompanioTool 🎮⚡
 
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-
-**VaroLocke** es la herramienta definitiva de gestión para tus partidas de **Pokémon Nuzlocke**. Diseñada con una estética **Cyberpunk / Glassmorphism**, ofrece un control total sobre tu equipo, estadísticas y progreso en tiempo real.
+**Tu herramienta definitiva de Pokémon** — Companion app para Nuzlockes, partidas libres, y análisis competitivo. Soporta **todas las generaciones** (Gen 1-9 + Legends Z-A) con mecánicas avanzadas de batalla.
 
 ---
 
-## ✨ Características Principales
+## ✨ Features
 
-### 📊 Dashboard Táctico
-- **Seguimiento Real**: Contador de vidas dinámico y medallero interactivo.
-- **Vista de Equipo**: Visualización rápida del nivel, tipos y estado de tus Pokémon activos.
+### 🎯 Modos de Juego
+- **Nuzlocke** — Seguimiento de vidas, muertes, reglas activas, y objetivos
+- **Libre** — Companion general sin restricciones para cualquier partida
+- **Competitivo** — Enfocado en teambuilding y análisis de matchups
 
-### 💻 Sistema de PC "Pro" (Novedades v2.0.1)
-- **Editor de Movimientos Avanzado**:
-    - 🏷️ **Iconos de Tipo**: Identificación visual instantánea.
-    - 💥 **Categorías de Daño**: Diferenciación clara entre Físico, Especial y Estado.
-    - 🔢 **Stats Detallados**: Visualización de PP, Potencia y Precisión.
-    - ❓ **Diccionario de Ataques**: Haz clic en el icono de ayuda para ver la explicación completa del movimiento.
-- **Gestión de Cajas Inteligente**: 
-    - Organización lógica donde el **Equipo** es la base y el almacenamiento empieza en la **Caja 2**.
-    - Evita confusiones de duplicidad entre el equipo y la primera caja.
-- **Auto-Fill de PokeAPI**: Generación automática de sprites, tipos y habilidades al escribir la especie.
+### ⚔️ Combat Tool
+- **Matchups defensivos** — Calcula debilidades y resistencias por tipo
+- **Teracristalización** — Override defensivo + STAB analysis (Gen 9)
+- **Mega Evolución** — Base de datos completa con cambios de tipo, habilidad y stats
+- **Movimientos Z** — Tabla de Z-Moves por tipo con base power
+- **Dynamax/Gigantamax** — Max Moves con efectos secundarios
+- **Battle Prep** — Añade el equipo rival y recibe análisis de counters automático
 
-### ⚔️ Combat Tool v2.0
-- **Calculadora de Debilidades**: Soporta doble tipo defensivo con multiplicadores de daño precisos (x4, x2, x0.5, x0.25, x0).
-- **Localización Completa**: Todo en español para una experiencia fluida.
+### 👥 Rival Lookup
+- Equipos de **Líderes de Gimnasio**, **Alto Mando** y **Campeones** por juego
+- Análisis de debilidades de cada equipo rival
+- Disponible para: FRLG, Platino, ORAS, USUM, Espada/Escudo, Escarlata/Púrpura
 
-### 💾 Persistencia y Sincronización
-- **Backend Robusto**: Sincronización automática con servidor local mediante Docker.
-- **Smart Import**: Carga masiva de datos mediante JSON (ideal para migrar desde otras herramientas o backups).
-- **Multi-Slot**: Gestiona varias partidas simultáneas sin sobrescribir datos.
+### 🔨 Team Builder
+- Construye equipos de 6 Pokémon (manualmente o desde tu PC)
+- **Puntuación de equipo** (0-100) basada en cobertura
+- **Debilidades compartidas** — Detecta tipos que golpean a 3+ miembros
+- **Cobertura ofensiva** — Identifica tipos sin cubrir
+- **Mapa defensivo** — Grid visual de resistencias vs debilidades por tipo
 
-### 🔒 Seguridad y Persistencia (Novedades v2.0.7)
-- **Base de Datos Persistente**: Corrección crítica implementada. La base de datos `saves.db` ahora vive obligatoriamente en el volumen seguro `/app/saves`. Tus partidas sobrevivirán a reinicios, actualizaciones y apagones.
-- **Liberación Segura**: Nuevo botón de "Liberar" en el editor con protocolo de confirmación para evitar accidentes.
+### 📱 PC Box
+- Gestión de Pokémon con drag & drop entre cajas
+- Información detallada: tipos, habilidad, ataques, objeto, naturaleza
+- Soporte para Shiny tracking
 
-### 🎨 UI/UX y Estética
-- **Coach AI Legible**: Chat rediseñado con alto contraste (texto blanco sobre púrpura neón) para mejor lectura.
-- **Logic Shiny v2**: Detección inteligente de variantes shiny en todas las fuentes de sprites (Showdown, Official, Home).
+### 🤖 AI Coach (Gemini)
+- Coach adaptativo según el modo de juego
+- Análisis contextual del equipo, medallas, y estado de la partida
+- Modelos disponibles: Gemini 2.5 Pro, 2.5 Flash, 2.0 Flash
+
+### 🎮 25+ Juegos Soportados
+Todas las generaciones desde Red/Blue hasta Legends Z-A, incluyendo:
+- Un modo **"Fan Game — Todas las Mecánicas"** para fan games que incluyen todo
 
 ---
 
-## 🚀 Instalación y Despliegue
+## 🚀 Quick Start (Desarrollo)
 
-### 🛠️ Requisitos
-- Node.js (v18+)
-- Docker y Docker Compose (Recomendado para producción)
-
-### 📦 Desarrollo Local
 ```bash
-# Servidor de desarrollo
+# Frontend
 cd nuzlocke-app
 npm install
-npm run dev
+npm run dev       # http://localhost:8085
+
+# Backend (opcional, para saves del servidor)
+cd backend
+npm install
+npm start         # http://localhost:8086
 ```
 
-### 🐳 Despliegue con Docker (Servidor)
-Docker expondrá el **Frontend** en el puerto `8085` y la **API** en el `8086`.
+## 🐋 Docker Deploy
 
 ```bash
-# Usando script de despliegue
-./deploy_final.ps1
-
-# O manualmente
-docker compose build
-docker compose up -d
+docker compose up -d --build
+# Frontend: http://localhost:8085
+# Backend API: http://localhost:8086
 ```
 
 ---
 
-## ⚡ Formato del Smart Import
-Puedes importar tu equipo pegando un JSON con el siguiente esquema en el menú de partidas guardadas:
+## 🛠️ Tech Stack
 
-```json
-{
-  "name": "Partida Maestra",
-  "game": "Pokémon Nuzlocke",
-  "team": ["Ignis", "Leviathan", "Sparky", "Spectre", "Mountain", "IQ"],
-  "box_details": {
-    "Ignis": {
-      "name": "Charizard",
-      "nickname": "Ignis",
-      "level": 60,
-      "item": "Carbón",
-      "moves": ["Lanzallamas", "Tajo Aéreo", "Pulso Dragón", "Respiro"]
-    },
-    "Leviathan": {
-      "name": "Gyarados",
-      "nickname": "Leviathan",
-      "level": 58,
-      "item": "Agua Mística",
-      "moves": ["Cascada", "Triturar", "Danza Dragón", "Colmillo Hielo"]
-    },
-    "Sparky": {
-      "name": "Jolteon",
-      "nickname": "Sparky",
-      "level": 57,
-      "item": "Imán",
-      "moves": ["Rayo", "Voltiocambio", "Bola Sombra", "Onda Trueno"]
-    },
-    "Spectre": {
-      "name": "Gengar",
-      "nickname": "Spectre",
-      "level": 59,
-      "item": "Lodo Negro",
-      "moves": ["Bola Sombra", "Bomba Lodo", "Brillo Mágico", "Mismo Destino"]
-    },
-    "Mountain": {
-      "name": "Tyranitar",
-      "nickname": "Mountain",
-      "level": 62,
-      "item": "Restos",
-      "moves": ["Roca Afilada", "Triturar", "Terremoto", "Puño Hielo"]
-    },
-    "IQ": {
-      "name": "Alakazam",
-      "nickname": "IQ",
-      "level": 58,
-      "item": "Cuchara Torcida",
-      "moves": ["Psíquico", "Onda Certera", "Recuperación", "Paz Mental"]
-    }
-  }
-}
+| Componente | Tecnología |
+|-----------|-----------|
+| Frontend | React 19, TypeScript, Vite 7 |
+| Routing | React Router v7 |
+| Animaciones | Framer Motion |
+| State | Zustand (persist + migration) |
+| Estilos | Tailwind CSS 3 (Cyberpunk theme) |
+| AI | Google Gemini API |
+| Backend | Node.js, Express, SQLite |
+| Deploy | Docker, Nginx |
+
+---
+
+## 📁 Estructura
+
+```
+├── nuzlocke-app/              # Frontend React
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Builder/       # Team Builder
+│   │   │   ├── Combat/        # CombatView + RivalLookup
+│   │   │   ├── Dashboard/     # Dashboard + AI Coach + Notes
+│   │   │   ├── Dex/           # Pokédex + MoveDex
+│   │   │   ├── Layout/        # AppLayout (sidebar + bottom nav)
+│   │   │   ├── PC/            # PC Box management
+│   │   │   ├── Rules/         # Nuzlocke rules
+│   │   │   └── Shared/        # Skeleton, CustomSelect, CustomInput, etc.
+│   │   ├── store/             # Zustand store (v4)
+│   │   └── utils/             # gameRegistry, mechanicsData, rivalTeams, typeChart, gemini
+│   └── Dockerfile
+├── backend/                   # Node.js API
+├── docker-compose.yml
+├── nginx.conf
+└── README.md
 ```
 
 ---
 
-*Desarrollado por **ElVarto**.*
+## 👤 Créditos
+
+Desarrollado por **ElVarto** (VaroTv7)
+
+> ⚠️ Este proyecto es un fan-project sin fines comerciales. Pokémon es marca registrada de Nintendo/Game Freak/The Pokémon Company.

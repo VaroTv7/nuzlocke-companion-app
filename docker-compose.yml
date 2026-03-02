@@ -2,25 +2,25 @@ version: '3.8'
 
 services:
   # Frontend - React App (Builds from source)
-  varo-locke-frontend:
-    container_name: varo-locke-frontend
+  varo-pokemon-frontend:
+    container_name: varo-pokemon-frontend
     build:
       context: ./nuzlocke-app
       dockerfile: Dockerfile
-    image: varo-locke-companion:v2.0
+    image: varopokemon-companiotool:v3.0
     restart: unless-stopped
     ports:
       - "8085:80"
     depends_on:
-      - varo-locke-api
+      - varo-pokemon-api
 
   # Backend - Node.js API
-  varo-locke-api:
-    container_name: varo-locke-api
+  varo-pokemon-api:
+    container_name: varo-pokemon-api
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: varo-locke-api:v1.0
+    image: varopokemon-api:v2.0
     restart: unless-stopped
     ports:
       - "8086:8086"
