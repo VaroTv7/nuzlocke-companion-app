@@ -369,7 +369,7 @@ export const useGameStore = create<GameState>()(
                     const status = (data.team && data.team.includes(nickname)) ? 'team' : 'box';
 
                     return {
-                        id: crypto.randomUUID(),
+                        id: generateUUID(),
                         name: details.nickname || species,
                         species: species,
                         sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${species.toLowerCase().replace(/ /g, '-')}.png`,
