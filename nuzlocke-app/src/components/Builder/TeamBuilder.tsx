@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle, Search } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { TYPES, getDefensiveMatchups } from '../../utils/typeChart';
+import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
+import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import type { PkmnType } from '../../utils/typeChart';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -33,6 +35,16 @@ export const TeamBuilder: React.FC = () => {
     const [showPicker, setShowPicker] = useState(false);
     const [customName, setCustomName] = useState('');
     const [customTypes, setCustomTypes] = useState<PkmnType[]>([]);
+    const [customSprite, setCustomSprite] = useState<string | undefined>(undefined);
+    const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Fetch pokemon list for autocomplete
+    React.useEffect(() => {
+        if (showPicker) {
+            fetchPokemonList().then(setAllPokemonNames);
+        }
+    }, [showPicker]);
 
     // Import from store team
     const importFromStore = () => {
@@ -51,10 +63,28 @@ export const TeamBuilder: React.FC = () => {
             id: crypto.randomUUID(),
             name: customName,
             types: [...customTypes],
+            sprite: customSprite,
         }]);
         setCustomName('');
         setCustomTypes([]);
+        setCustomSprite(undefined);
         setShowPicker(false);
+    };
+
+    const handlePokemonSelect = async (name: string) => {
+        setCustomName(name);
+        setIsSearching(true);
+        try {
+            const data = await fetchPokemonSpecies(name);
+            if (data) {
+                setCustomTypes(data.types as PkmnType[]);
+                setCustomSprite(data.sprite);
+            }
+        } catch (error) {
+            console.error("Error fetching pokemon species data", error);
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     const removePokemon = (id: string) => {
@@ -218,22 +248,35 @@ export const TeamBuilder: React.FC = () => {
                     <div>
                         <p className="text-xs text-gray-400 mb-2">✏️ Añadir manualmente:</p>
                         <div className="flex gap-2 mb-2">
-                            <input
-                                type="text"
-                                value={customName}
-                                onChange={e => setCustomName(e.target.value)}
-                                placeholder="Nombre del Pokémon..."
-                                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyber-primary/50"
-                                onKeyDown={e => e.key === 'Enter' && addCustomPokemon()}
-                            />
+                            <div className="flex-1 relative">
+                                <AutocompleteInput
+                                    options={allPokemonNames}
+                                    value={customName}
+                                    onChange={setCustomName}
+                                    onSelect={handlePokemonSelect}
+                                    placeholder="Nombre del Pokémon..."
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyber-primary/50"
+                                />
+                                {isSearching && (
+                                    <div className="absolute right-3 top-2.5">
+                                        <div className="animate-spin w-4 h-4 border-2 border-cyber-primary border-t-transparent rounded-full"></div>
+                                    </div>
+                                )}
+                            </div>
                             <button
                                 onClick={addCustomPokemon}
-                                disabled={!customName || customTypes.length === 0}
-                                className="px-4 py-2 bg-cyber-primary/20 text-cyber-primary rounded-xl text-xs font-bold hover:bg-cyber-primary/30 disabled:opacity-30 transition-all"
+                                disabled={!customName || customTypes.length === 0 || isSearching}
+                                className="px-4 py-2 bg-cyber-primary/20 text-cyber-primary rounded-xl text-xs font-bold hover:bg-cyber-primary/30 disabled:opacity-30 transition-all self-start h-[38px]"
                             >
                                 Añadir
                             </button>
                         </div>
+                        {customSprite && (
+                            <div className="flex items-center gap-2 mb-3 p-2 bg-black/20 rounded-lg border border-white/5 animate-fade-in">
+                                <img src={customSprite} alt="Preview" className="w-10 h-10 pixelated" />
+                                <span className="text-xs text-gray-400 capitalize">{customName.replace(/-/g, ' ')} detectado</span>
+                            </div>
+                        )}
                         <div className="flex flex-wrap gap-1">
                             {TYPES.map(type => (
                                 <button
@@ -336,8 +379,8 @@ export const TeamBuilder: React.FC = () => {
                                         <div
                                             key={type}
                                             className={`p-2 rounded-lg text-center border ${net > 0 ? 'border-green-500/30 bg-green-500/10' :
-                                                    net < 0 ? 'border-red-500/30 bg-red-500/10' :
-                                                        'border-white/10 bg-white/5'
+                                                net < 0 ? 'border-red-500/30 bg-red-500/10' :
+                                                    'border-white/10 bg-white/5'
                                                 }`}
                                             title={`Débil: ${weakTo}, Resiste: ${resistsTo}`}
                                         >
