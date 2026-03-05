@@ -211,7 +211,7 @@ export const TeamBuilder: React.FC = () => {
 
             {/* Add Pokémon picker */}
             {showPicker && (
-                <div className="glass-card p-5 rounded-2xl space-y-4 border border-cyber-primary/30 animate-slide-up">
+                <div className="glass-card p-5 rounded-2xl space-y-4 border border-cyber-primary/30 animate-slide-up overflow-visible">
                     <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Añadir Pokémon al equipo</h3>
 
                     {/* From store PC */}
@@ -246,19 +246,19 @@ export const TeamBuilder: React.FC = () => {
 
                     {/* Custom entry */}
                     <div>
-                        <p className="text-xs text-gray-400 mb-2">✏️ Añadir manualmente:</p>
+                        <p className="text-xs text-gray-400 mb-2">✏️ Añadir Pokémon (busca por nombre):</p>
                         <div className="flex gap-2 mb-2">
-                            <div className="flex-1 relative">
+                            <div className="flex-1 relative" style={{ zIndex: 50 }}>
                                 <AutocompleteInput
                                     options={allPokemonNames}
                                     value={customName}
                                     onChange={setCustomName}
                                     onSelect={handlePokemonSelect}
-                                    placeholder="Nombre del Pokémon..."
+                                    placeholder="Escribe un nombre (ej: Garchomp)..."
                                     className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyber-primary/50"
                                 />
                                 {isSearching && (
-                                    <div className="absolute right-3 top-2.5">
+                                    <div className="absolute right-3 top-2.5" style={{ zIndex: 51 }}>
                                         <div className="animate-spin w-4 h-4 border-2 border-cyber-primary border-t-transparent rounded-full"></div>
                                     </div>
                                 )}
