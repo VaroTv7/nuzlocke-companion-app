@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle, Search } from 'lucide-react';
+import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { TYPES, getDefensiveMatchups } from '../../utils/typeChart';
 import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
