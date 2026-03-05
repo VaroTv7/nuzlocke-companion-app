@@ -69,6 +69,15 @@ docker compose up -d --build
 # Backend API: http://localhost:8086
 ```
 
+## 🔄 Cómo Actualizar (Update)
+
+Si ya tienes el proyecto desplegado y quieres aplicar los últimos cambios:
+
+```bash
+git pull origin main
+docker compose up -d --build
+```
+
 ---
 
 ## 🛠️ Tech Stack
