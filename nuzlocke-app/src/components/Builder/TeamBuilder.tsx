@@ -234,7 +234,7 @@ export const TeamBuilder: React.FC = () => {
         if (team.length === 0) return null;
 
         // Defensive: what types are we weak to?
-        const defensiveWeaknesses: Record<string, number> = {};
+        const defensiveWeaknesses: Record<string, string[]> = {};
         const defensiveResistances: Record<string, number> = {};
         const defensiveImmunities: Record<string, number> = {};
 
@@ -242,7 +242,8 @@ export const TeamBuilder: React.FC = () => {
             const matchups = getDefensiveMatchups(p.types);
             [4, 2].forEach(mult => {
                 matchups[mult]?.forEach(type => {
-                    defensiveWeaknesses[type] = (defensiveWeaknesses[type] || 0) + 1;
+                    if (!defensiveWeaknesses[type]) defensiveWeaknesses[type] = [];
+                    defensiveWeaknesses[type].push(p.name);
                 });
             });
             [0.5, 0.25].forEach(mult => {
@@ -273,8 +274,8 @@ export const TeamBuilder: React.FC = () => {
 
         // Shared weaknesses (types that hit 3+ team members)
         const sharedWeaknesses = Object.entries(defensiveWeaknesses)
-            .filter(([, count]) => count >= 3)
-            .sort(([, a], [, b]) => b - a)
+            .filter(([, pkmnList]) => pkmnList.length >= 3)
+            .sort(([, a], [, b]) => b.length - a.length)
             .map(([type]) => type as PkmnType);
 
         // Overall score
@@ -485,18 +486,29 @@ export const TeamBuilder: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Shared Weaknesses */}
                         {analysis.sharedWeaknesses.length > 0 && (
-                            <div className="glass-card p-4 rounded-xl border border-red-500/20">
+                            <div className="glass-card p-4 rounded-xl border border-red-500/20 col-span-1 md:col-span-2">
                                 <h4 className="text-sm font-bold text-red-400 flex items-center gap-2 mb-3">
                                     <AlertTriangle size={16} /> Debilidades Compartidas
                                 </h4>
-                                <p className="text-xs text-gray-400 mb-2">Estos tipos golpean a 3+ miembros del equipo:</p>
-                                <div className="flex flex-wrap gap-1.5">
+                                <p className="text-xs text-gray-400 mb-3">Estos tipos resultan muy peligrosos para gran parte de tu equipo:</p>
+                                <div className="grid gap-3">
                                     {analysis.sharedWeaknesses.map(t => (
-                                        <div key={t} className="flex items-center gap-1">
-                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: TYPE_COLORS[t] }}>
-                                                {TYPE_NAMES_ES[t]}
-                                            </span>
-                                            <span className="text-[10px] text-red-400 font-bold" title={`${analysis.defensiveWeaknesses[t]} Pokémon tienen debilidad a este tipo`}>(Afecta a {analysis.defensiveWeaknesses[t]})</span>
+                                        <div key={t} className="flex flex-col gap-1.5 p-2.5 bg-black/30 rounded-lg border border-red-500/10">
+                                            <div className="flex items-center justify-between">
+                                                <span className="px-2 py-1 rounded text-xs font-bold text-white shadow-sm" style={{ backgroundColor: TYPE_COLORS[t] }}>
+                                                    {TYPE_NAMES_ES[t]}
+                                                </span>
+                                                <span className="text-[10px] text-red-400 font-bold bg-red-400/10 px-2 py-0.5 rounded-full">
+                                                    Afecta a {analysis.defensiveWeaknesses[t].length}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {analysis.defensiveWeaknesses[t].map(name => (
+                                                    <span key={name} className="text-[10px] text-gray-300 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded capitalize">
+                                                        {name}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -532,7 +544,7 @@ export const TeamBuilder: React.FC = () => {
                             <h4 className="text-sm font-bold text-gray-300 mb-3">Mapa Defensivo por Tipo</h4>
                             <div className="grid grid-cols-6 md:grid-cols-9 gap-1.5">
                                 {TYPES.map(type => {
-                                    const weakTo = analysis.defensiveWeaknesses[type] || 0;
+                                    const weakTo = analysis.defensiveWeaknesses[type]?.length || 0;
                                     const resistsTo = (analysis.defensiveResistances[type] || 0) + (analysis.defensiveImmunities[type] || 0);
                                     const net = resistsTo - weakTo;
 
