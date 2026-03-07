@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useGameStore } from '../../store/useGameStore';
+import { useGameStore, getSaveableState } from '../../store/useGameStore';
 import { SaveSelector } from '../Shared/SaveSelector';
 import { SettingsModal } from '../Shared/SettingsModal';
 import { AICoach } from '../Dashboard/AICoach';
@@ -57,11 +57,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     };
 
     const getStateForSave = () => {
-        const state = useGameStore.getState();
-        return {
-            lives: state.lives, badges: state.badges, objectives: state.objectives,
-            pokemon: state.pokemon, rules: state.rules, boxes: state.boxes, notes: state.notes,
-        };
+        return getSaveableState(useGameStore.getState());
     };
 
     // Mobile shows max 4 items + "more"

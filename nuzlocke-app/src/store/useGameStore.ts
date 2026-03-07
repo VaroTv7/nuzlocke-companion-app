@@ -126,7 +126,7 @@ const DEFAULT_STATE: SaveableState = {
 };
 
 // Helper to extract saveable state
-const getSaveableState = (state: GameState): SaveableState => ({
+export const getSaveableState = (state: GameState): SaveableState => ({
     lives: state.lives,
     badges: state.badges,
     objectives: state.objectives,
