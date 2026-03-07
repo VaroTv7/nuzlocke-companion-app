@@ -52,6 +52,17 @@ interface BadgeState {
     earned: boolean[];
 }
 
+export interface SavedTeam {
+    id: string;
+    name: string;
+    pokemon: {
+        id: string;
+        name: string;
+        types: PkmnType[];
+        sprite?: string;
+    }[];
+}
+
 // State that gets saved
 interface SaveableState {
     lives: number;
@@ -66,6 +77,7 @@ interface SaveableState {
     // New fields
     gameMode: GameMode;
     selectedGame: string;
+    savedTeams: SavedTeam[];
 }
 
 export interface GameState extends SaveableState {
@@ -91,6 +103,10 @@ export interface GameState extends SaveableState {
     updateBox: (id: number, name: string) => void;
     setGameMode: (mode: GameMode) => void;
     setSelectedGame: (gameId: string) => void;
+
+    // Team Builder
+    saveCustomTeam: (name: string, pokemon: SavedTeam['pokemon']) => void;
+    deleteCustomTeam: (id: string) => void;
 
     // Server sync actions
     loadFromServer: (saveId: string) => Promise<boolean>;
@@ -123,6 +139,7 @@ const DEFAULT_STATE: SaveableState = {
     aiChatHistory: [],
     gameMode: 'nuzlocke',
     selectedGame: 'scarlet-violet',
+    savedTeams: [],
 };
 
 // Helper to extract saveable state
@@ -138,6 +155,7 @@ export const getSaveableState = (state: GameState): SaveableState => ({
     aiChatHistory: state.aiChatHistory,
     gameMode: state.gameMode,
     selectedGame: state.selectedGame,
+    savedTeams: state.savedTeams,
 });
 
 // Debounced auto-save
@@ -252,6 +270,18 @@ export const useGameStore = create<GameState>()(
                 set({ selectedGame: gameId });
                 if (get().isServerMode) debouncedSave(() => get().saveToServer());
             },
+            saveCustomTeam: (name, pokemon) => {
+                set((state) => ({
+                    savedTeams: [...state.savedTeams, { id: generateUUID(), name, pokemon }]
+                }));
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
+            deleteCustomTeam: (id) => {
+                set((state) => ({
+                    savedTeams: state.savedTeams.filter(t => t.id !== id)
+                }));
+                if (get().isServerMode) debouncedSave(() => get().saveToServer());
+            },
 
             // Server sync actions
             loadFromServer: async (saveId: string) => {
@@ -273,6 +303,7 @@ export const useGameStore = create<GameState>()(
                         // Ensure new fields have defaults
                         if (!repairedState.gameMode) repairedState.gameMode = 'nuzlocke';
                         if (!repairedState.selectedGame) repairedState.selectedGame = 'scarlet-violet';
+                        if (!repairedState.savedTeams) repairedState.savedTeams = [];
 
                         set({
                             ...repairedState,

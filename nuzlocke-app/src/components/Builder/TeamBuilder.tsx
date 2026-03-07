@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Hammer, Plus, X, Shield, AlertTriangle, CheckCircle, Save, FolderOpen, Swords, Trash2, ArrowRight } from 'lucide-react';
 import { useGameStore } from '../../store/useGameStore';
 import { TYPES, getDefensiveMatchups } from '../../utils/typeChart';
 import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
@@ -30,7 +30,7 @@ interface BuilderPokemon {
 }
 
 export const TeamBuilder: React.FC = () => {
-    const { pokemon } = useGameStore();
+    const { pokemon, savedTeams, saveCustomTeam, deleteCustomTeam } = useGameStore();
     const [team, setTeam] = useState<BuilderPokemon[]>([]);
     const [showPicker, setShowPicker] = useState(false);
     const [customName, setCustomName] = useState('');
@@ -39,8 +39,30 @@ export const TeamBuilder: React.FC = () => {
     const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    // Save / Load / Matchup UI State
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [teamName, setTeamName] = useState('');
+    const [opponentTeamId, setOpponentTeamId] = useState<string | null>(null);
+
+    // Auto-load current team if empty on mount
+    useEffect(() => {
+        if (team.length === 0) {
+            const activeTeam = pokemon.filter(p => p.status === 'team');
+            if (activeTeam.length > 0) {
+                setTeam(activeTeam.map(p => ({
+                    id: p.id,
+                    name: p.name || p.species,
+                    types: p.types,
+                    sprite: p.sprite,
+                })));
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Fetch pokemon list for autocomplete
-    React.useEffect(() => {
+    useEffect(() => {
         if (showPicker) {
             fetchPokemonList().then(setAllPokemonNames);
         }
@@ -90,6 +112,74 @@ export const TeamBuilder: React.FC = () => {
     const removePokemon = (id: string) => {
         setTeam(prev => prev.filter(p => p.id !== id));
     };
+
+    const handleSaveTeam = () => {
+        if (!teamName.trim() || team.length === 0) return;
+        saveCustomTeam(teamName, team);
+        setShowSaveDialog(false);
+        setTeamName('');
+    };
+
+    const handleLoadTeam = (id: string) => {
+        const target = savedTeams.find(t => t.id === id);
+        if (target) {
+            setTeam(target.pokemon);
+            setOpponentTeamId(null); // Reset matchup if changing team
+            setShowLoadDialog(false);
+        }
+    };
+
+    // Extract the opponent team data based on ID
+    const opponentTeam = useMemo(() => {
+        if (!opponentTeamId) return null;
+        if (opponentTeamId === 'active') {
+            return pokemon.filter(p => p.status === 'team').map(p => ({
+                id: p.id,
+                name: p.name || p.species,
+                types: p.types,
+                sprite: p.sprite,
+            }));
+        }
+        return savedTeams.find(t => t.id === opponentTeamId)?.pokemon || null;
+    }, [opponentTeamId, savedTeams, pokemon]);
+
+    // Head-to-Head Competitive Matchup Analyzer
+    const matchupAnalysis = useMemo(() => {
+        if (!opponentTeam || team.length === 0 || opponentTeam.length === 0) return null;
+
+        // Which of our Pokémon hit the opponent's Pokémon super-effectively (STAB)?
+        const advantages: { ourPkmn: string, hits: string[] }[] = [];
+        // Which of opponent's Pokémon hit our Pokémon super-effectively (STAB)?
+        const threats: { oppPkmn: string, hits: string[] }[] = [];
+
+        team.forEach(ourPkmn => {
+            const hits: string[] = [];
+            ourPkmn.types.forEach(ourType => {
+                opponentTeam.forEach(oppPkmn => {
+                    const matchup = getDefensiveMatchups(oppPkmn.types);
+                    if (matchup[2]?.includes(ourType) || matchup[4]?.includes(ourType)) {
+                        if (!hits.includes(oppPkmn.name)) hits.push(oppPkmn.name);
+                    }
+                });
+            });
+            if (hits.length > 0) advantages.push({ ourPkmn: ourPkmn.name, hits });
+        });
+
+        opponentTeam.forEach(oppPkmn => {
+            const hits: string[] = [];
+            oppPkmn.types.forEach(oppType => {
+                team.forEach(ourPkmn => {
+                    const matchup = getDefensiveMatchups(ourPkmn.types);
+                    if (matchup[2]?.includes(oppType) || matchup[4]?.includes(oppType)) {
+                        if (!hits.includes(ourPkmn.name)) hits.push(ourPkmn.name);
+                    }
+                });
+            });
+            if (hits.length > 0) threats.push({ oppPkmn: oppPkmn.name, hits });
+        });
+
+        return { advantages, threats };
+    }, [team, opponentTeam]);
 
     // Type coverage analysis
     const analysis = useMemo(() => {
@@ -161,17 +251,40 @@ export const TeamBuilder: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                     <Hammer size={24} className="text-cyber-primary" />
                     Team Builder
                 </h2>
-                <button
-                    onClick={importFromStore}
-                    className="px-3 py-1.5 bg-cyber-secondary/20 text-cyber-secondary rounded-lg text-xs font-bold hover:bg-cyber-secondary/30 transition-all"
-                >
-                    Importar mi equipo
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={importFromStore}
+                        className="px-3 py-1.5 bg-cyber-secondary/20 text-cyber-secondary rounded-lg text-xs font-bold hover:bg-cyber-secondary/30 transition-all flex items-center gap-1"
+                        title="Importar equipo activo"
+                    >
+                        <ArrowRight size={14} /> Importar Mi Equipo
+                    </button>
+                    <button
+                        onClick={() => setShowLoadDialog(true)}
+                        className="px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-500/30 transition-all flex items-center gap-1"
+                    >
+                        <FolderOpen size={14} /> Cargar
+                    </button>
+                    <button
+                        onClick={() => setShowSaveDialog(true)}
+                        disabled={team.length === 0}
+                        className="px-3 py-1.5 bg-cyber-primary/20 text-cyber-primary rounded-lg text-xs font-bold hover:bg-cyber-primary/30 disabled:opacity-50 transition-all flex items-center gap-1"
+                    >
+                        <Save size={14} /> Guardar
+                    </button>
+                    <button
+                        onClick={() => { setTeam([]); setOpponentTeamId(null); }}
+                        disabled={team.length === 0}
+                        className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs font-bold hover:bg-red-500/30 disabled:opacity-50 transition-all flex items-center gap-1"
+                    >
+                        <Trash2 size={14} /> Limpiar
+                    </button>
+                </div>
             </div>
 
             {/* Team slots */}
@@ -396,6 +509,145 @@ export const TeamBuilder: React.FC = () => {
                                 })}
                             </div>
                             <p className="text-[10px] text-gray-500 mt-2 text-center">Verde = más resistencias que debilidades | Rojo = más debilidades</p>
+                        </div>
+                    </div>
+
+                    {/* Competitive Matchup Analyzer */}
+                    <div className="glass-card p-5 rounded-2xl border border-blue-500/30 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full" />
+                        <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-blue-400 relative z-10">
+                            <Swords size={20} /> Analizador Competitivo
+                        </h3>
+
+                        <div className="flex items-center gap-3 mb-6 relative z-10">
+                            <label className="text-sm font-semibold text-gray-300">Equipo Rival:</label>
+                            <select
+                                value={opponentTeamId || ''}
+                                onChange={(e) => setOpponentTeamId(e.target.value || null)}
+                                className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-blue-500/50 outline-none"
+                            >
+                                <option value="">-- Selecciona un rival --</option>
+                                <option value="active">▶ Mi Equipo Activo</option>
+                                {savedTeams.map(t => (
+                                    <option key={t.id} value={t.id}>💾 {t.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {opponentTeamId && matchupAnalysis && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                                {/* Our Advantages */}
+                                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
+                                    <h4 className="text-sm font-bold text-green-400 mb-3 flex items-center gap-2">
+                                        <CheckCircle size={16} /> Nuestras Amenazas
+                                    </h4>
+                                    {matchupAnalysis.advantages.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {matchupAnalysis.advantages.map((adv, idx) => (
+                                                <div key={idx} className="bg-black/30 rounded-lg p-2">
+                                                    <span className="text-white font-bold text-sm capitalize">{adv.ourPkmn}</span>
+                                                    <span className="text-gray-400 text-xs ml-2">hace 2x a:</span>
+                                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                                        {adv.hits.map(h => (
+                                                            <span key={h} className="text-[10px] bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded capitalize">{h}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 italic">No tienes ataques con STAB eficaces contra este equipo.</p>
+                                    )}
+                                </div>
+
+                                {/* Opponent Threats */}
+                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                                    <h4 className="text-sm font-bold text-red-400 mb-3 flex items-center gap-2">
+                                        <AlertTriangle size={16} /> Amenazas del Rival
+                                    </h4>
+                                    {matchupAnalysis.threats.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {matchupAnalysis.threats.map((threat, idx) => (
+                                                <div key={idx} className="bg-black/30 rounded-lg p-2">
+                                                    <span className="text-red-400 font-bold text-sm capitalize">{threat.oppPkmn}</span>
+                                                    <span className="text-gray-400 text-xs ml-2">hace 2x a:</span>
+                                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                                        {threat.hits.map(h => (
+                                                            <span key={h} className="text-[10px] bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded capitalize">{h}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 italic">El rival no tiene ventaja de STAB contra tu equipo.</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Modals */}
+            {showSaveDialog && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="glass-card p-6 rounded-2xl w-full max-w-sm border border-cyber-primary/50">
+                        <h3 className="text-lg font-bold mb-4">Guardar Equipo</h3>
+                        <input
+                            type="text"
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            placeholder="Ej: Estrategia Alto Mando"
+                            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white mb-4 focus:border-cyber-primary/50 outline-none"
+                            autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setShowSaveDialog(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Cancelar</button>
+                            <button
+                                onClick={handleSaveTeam}
+                                disabled={!teamName.trim()}
+                                className="px-4 py-2 bg-cyber-primary text-black font-bold rounded-xl text-sm disabled:opacity-50 transition-colors"
+                            >
+                                Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showLoadDialog && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="glass-card p-6 rounded-2xl w-full max-w-md border border-blue-500/30 max-h-[80vh] flex flex-col">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold flex items-center gap-2"><FolderOpen size={20} className="text-blue-400" /> Cargar Equipo</h3>
+                            <button onClick={() => setShowLoadDialog(false)} className="text-gray-400 hover:text-white"><X size={20} /></button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            {savedTeams.length === 0 ? (
+                                <p className="text-center text-gray-500 py-8">Aún no has guardado ningún equipo personalizado.</p>
+                            ) : (
+                                savedTeams.map(st => (
+                                    <div key={st.id} className="bg-white/5 border border-white/10 rounded-xl p-3 flex group">
+                                        <div className="flex-1 cursor-pointer" onClick={() => handleLoadTeam(st.id)}>
+                                            <h4 className="font-bold text-sm text-white mb-2 group-hover:text-blue-400 transition-colors">{st.name}</h4>
+                                            <div className="flex gap-1">
+                                                {st.pokemon.slice(0, 6).map((p, i) => (
+                                                    <img key={i} src={p.sprite} alt={p.name} className="w-8 h-8 pixelated opacity-80 group-hover:opacity-100" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); deleteCustomTeam(st.id); }}
+                                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-white/5 rounded-lg transition-all"
+                                            title="Eliminar equipo"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
