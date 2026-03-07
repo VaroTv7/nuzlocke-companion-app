@@ -6,6 +6,29 @@ import { fetchPokemonList, fetchPokemonSpecies } from '../../utils/pokeapi';
 import { AutocompleteInput } from '../Shared/AutocompleteInput';
 import type { PkmnType } from '../../utils/typeChart';
 
+// Common competitive coverage moves by type (Simulated warnings)
+const COMMON_COVERAGE: Record<string, { type: PkmnType; reason: string }[]> = {
+    water: [
+        { type: 'ice', reason: 'Suelen llevar Rayo Hielo para cubrir tipos Planta y Dragón' }
+    ],
+    electric: [
+        { type: 'ice', reason: 'Suelen llevar Poder Oculto Hielo / Rayo Hielo para los Tierra' }
+    ],
+    fighting: [
+        { type: 'rock', reason: 'Suelen llevar Avalancha/Roca Afilada para los Voladores' },
+        { type: 'dark', reason: 'Suelen llevar Desarme para los Fantasmas/Psíquicos' }
+    ],
+    ground: [
+        { type: 'rock', reason: 'Casi siempre se usa el combo Tierra/Roca (Terremoto + Avalancha)' }
+    ],
+    psychic: [
+        { type: 'fighting', reason: 'Suelen llevar Onda Certera (Focus Blast) para los Siniestros/Acero' },
+    ],
+    normal: [
+        { type: 'ground', reason: 'Suelen llevar Terremoto por cobertura general' }
+    ]
+};
+
 const TYPE_COLORS: Record<string, string> = {
     normal: '#A8A878', fire: '#F08030', water: '#6890F0', electric: '#F8D030',
     grass: '#78C850', ice: '#98D8D8', fighting: '#C03028', poison: '#A040A0',
@@ -147,38 +170,63 @@ export const TeamBuilder: React.FC = () => {
     const matchupAnalysis = useMemo(() => {
         if (!opponentTeam || team.length === 0 || opponentTeam.length === 0) return null;
 
-        // Which of our Pokémon hit the opponent's Pokémon super-effectively (STAB)?
-        const advantages: { ourPkmn: string, hits: string[] }[] = [];
-        // Which of opponent's Pokémon hit our Pokémon super-effectively (STAB)?
-        const threats: { oppPkmn: string, hits: string[] }[] = [];
+        type HitDetail = { target: string; multiplier: 2 | 4; attackType: PkmnType; isStab: boolean };
+        type ThreatWarning = { target: string; source: string; coverageType: PkmnType; multiplier: 2 | 4; reason: string };
 
+        const advantages: { ourPkmn: string, hits: HitDetail[] }[] = [];
+        const threats: { oppPkmn: string, hits: HitDetail[] }[] = [];
+        const warnings: ThreatWarning[] = [];
+
+        // Check Our Advantages (STAB only for now)
         team.forEach(ourPkmn => {
-            const hits: string[] = [];
+            const hits: HitDetail[] = [];
             ourPkmn.types.forEach(ourType => {
                 opponentTeam.forEach(oppPkmn => {
                     const matchup = getDefensiveMatchups(oppPkmn.types);
-                    if (matchup[2]?.includes(ourType) || matchup[4]?.includes(ourType)) {
-                        if (!hits.includes(oppPkmn.name)) hits.push(oppPkmn.name);
+                    if (matchup[4]?.includes(ourType)) {
+                        hits.push({ target: oppPkmn.name, multiplier: 4, attackType: ourType, isStab: true });
+                    } else if (matchup[2]?.includes(ourType)) {
+                        hits.push({ target: oppPkmn.name, multiplier: 2, attackType: ourType, isStab: true });
                     }
                 });
             });
             if (hits.length > 0) advantages.push({ ourPkmn: ourPkmn.name, hits });
         });
 
+        // Check Opponent Threats (STAB only) & Coverage Warnings
         opponentTeam.forEach(oppPkmn => {
-            const hits: string[] = [];
+            const hits: HitDetail[] = [];
+
+            // Check their STAB moves against us
             oppPkmn.types.forEach(oppType => {
                 team.forEach(ourPkmn => {
                     const matchup = getDefensiveMatchups(ourPkmn.types);
-                    if (matchup[2]?.includes(oppType) || matchup[4]?.includes(oppType)) {
-                        if (!hits.includes(ourPkmn.name)) hits.push(ourPkmn.name);
+                    if (matchup[4]?.includes(oppType)) {
+                        hits.push({ target: ourPkmn.name, multiplier: 4, attackType: oppType, isStab: true });
+                    } else if (matchup[2]?.includes(oppType)) {
+                        hits.push({ target: ourPkmn.name, multiplier: 2, attackType: oppType, isStab: true });
                     }
                 });
+
+                // Check common coverage for this opponent type
+                const commonCoverage = COMMON_COVERAGE[oppType];
+                if (commonCoverage) {
+                    team.forEach(ourPkmn => {
+                        const matchup = getDefensiveMatchups(ourPkmn.types);
+                        commonCoverage.forEach(cov => {
+                            if (matchup[4]?.includes(cov.type)) {
+                                warnings.push({ target: ourPkmn.name, source: oppPkmn.name, coverageType: cov.type, multiplier: 4, reason: cov.reason });
+                            } else if (matchup[2]?.includes(cov.type)) {
+                                warnings.push({ target: ourPkmn.name, source: oppPkmn.name, coverageType: cov.type, multiplier: 2, reason: cov.reason });
+                            }
+                        });
+                    });
+                }
             });
             if (hits.length > 0) threats.push({ oppPkmn: oppPkmn.name, hits });
         });
 
-        return { advantages, threats };
+        return { advantages, threats, warnings };
     }, [team, opponentTeam]);
 
     // Type coverage analysis
@@ -535,54 +583,113 @@ export const TeamBuilder: React.FC = () => {
                         </div>
 
                         {opponentTeamId && matchupAnalysis && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                                {/* Our Advantages */}
-                                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
-                                    <h4 className="text-sm font-bold text-green-400 mb-3 flex items-center gap-2">
-                                        <CheckCircle size={16} /> Nuestras Amenazas
+                            <div className="space-y-4 relative z-10 mt-6">
+                                {/* Informational Note about multipliers */}
+                                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
+                                    <h4 className="text-sm font-bold text-blue-300 mb-2 flex items-center gap-2">
+                                        ℹ️ ¿Cómo se calcula el daño aquí?
                                     </h4>
-                                    {matchupAnalysis.advantages.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {matchupAnalysis.advantages.map((adv, idx) => (
-                                                <div key={idx} className="bg-black/30 rounded-lg p-2">
-                                                    <span className="text-white font-bold text-sm capitalize">{adv.ourPkmn}</span>
-                                                    <span className="text-gray-400 text-xs ml-2">hace 2x a:</span>
-                                                    <div className="flex flex-wrap gap-1 mt-1.5">
-                                                        {adv.hits.map(h => (
-                                                            <span key={h} className="text-[10px] bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded capitalize">{h}</span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">No tienes ataques con STAB eficaces contra este equipo.</p>
-                                    )}
+                                    <ul className="text-xs text-gray-400 space-y-1 ml-6 list-disc">
+                                        <li>Los ataques del mismo tipo que el Pokémon ganan <strong>STAB (Bonus de x1.5)</strong> de daño base.</li>
+                                        <li><strong className="text-yellow-400">x2</strong> indica un daño <strong>Súper Eficaz</strong>.</li>
+                                        <li><strong className="text-red-400">x4</strong> indica un daño <strong>Doble Súper Eficaz</strong> (Suele ser K.O. directo).</li>
+                                    </ul>
                                 </div>
 
-                                {/* Opponent Threats */}
-                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                                    <h4 className="text-sm font-bold text-red-400 mb-3 flex items-center gap-2">
-                                        <AlertTriangle size={16} /> Amenazas del Rival
-                                    </h4>
-                                    {matchupAnalysis.threats.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {matchupAnalysis.threats.map((threat, idx) => (
-                                                <div key={idx} className="bg-black/30 rounded-lg p-2">
-                                                    <span className="text-red-400 font-bold text-sm capitalize">{threat.oppPkmn}</span>
-                                                    <span className="text-gray-400 text-xs ml-2">hace 2x a:</span>
-                                                    <div className="flex flex-wrap gap-1 mt-1.5">
-                                                        {threat.hits.map(h => (
-                                                            <span key={h} className="text-[10px] bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded capitalize">{h}</span>
-                                                        ))}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Our Advantages */}
+                                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
+                                        <h4 className="text-sm font-bold text-green-400 mb-3 flex items-center gap-2">
+                                            <CheckCircle size={16} /> Nuestras Amenazas (STAB)
+                                        </h4>
+                                        {matchupAnalysis.advantages.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {matchupAnalysis.advantages.map((adv, idx) => (
+                                                    <div key={idx} className="bg-black/30 rounded-lg p-2">
+                                                        <span className="text-white font-bold text-sm capitalize flex items-center gap-1">
+                                                            {adv.ourPkmn}
+                                                            <span className="text-[9px] bg-green-500/20 text-green-300 px-1 py-0.5 rounded">STAB x1.5</span>
+                                                        </span>
+                                                        <div className="flex flex-col gap-1.5 mt-2">
+                                                            {adv.hits.map((h, i) => (
+                                                                <div key={i} className="flex items-center text-xs gap-1">
+                                                                    <span className="text-gray-400">Destruye a</span>
+                                                                    <span className="capitalize text-white">{h.target}</span>
+                                                                    <span className="text-gray-500">con</span>
+                                                                    <span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: TYPE_COLORS[h.attackType] }}>{TYPE_NAMES_ES[h.attackType]}</span>
+                                                                    <span className={`font-black ml-auto ${h.multiplier === 4 ? 'text-red-400' : 'text-yellow-400'}`}>x{h.multiplier}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 italic">No tienes ataques con STAB eficaces contra este equipo.</p>
+                                        )}
+                                    </div>
+
+                                    {/* Opponent Threats */}
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                                        <h4 className="text-sm font-bold text-red-400 mb-3 flex items-center gap-2">
+                                            <AlertTriangle size={16} /> Amenazas del Rival (STAB)
+                                        </h4>
+                                        {matchupAnalysis.threats.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {matchupAnalysis.threats.map((threat, idx) => (
+                                                    <div key={idx} className="bg-black/30 rounded-lg p-2">
+                                                        <span className="text-red-400 font-bold text-sm capitalize flex items-center gap-1">
+                                                            {threat.oppPkmn}
+                                                            <span className="text-[9px] bg-red-500/20 text-red-300 px-1 py-0.5 rounded">STAB x1.5</span>
+                                                        </span>
+                                                        <div className="flex flex-col gap-1.5 mt-2">
+                                                            {threat.hits.map((h, i) => (
+                                                                <div key={i} className="flex items-center text-xs gap-1">
+                                                                    <span className="text-gray-400">Pega a</span>
+                                                                    <span className="capitalize text-white">{h.target}</span>
+                                                                    <span className="text-gray-500">con</span>
+                                                                    <span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: TYPE_COLORS[h.attackType] }}>{TYPE_NAMES_ES[h.attackType]}</span>
+                                                                    <span className={`font-black ml-auto ${h.multiplier === 4 ? 'text-red-400' : 'text-yellow-400'}`}>x{h.multiplier}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 italic">El rival no tiene ventaja de STAB contra tu equipo.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Coverage Warnings */}
+                                {matchupAnalysis.warnings.length > 0 && (
+                                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mt-4">
+                                        <h4 className="text-sm font-bold text-yellow-400 mb-3 flex items-center gap-2">
+                                            <AlertTriangle size={16} /> Alertas de Cobertura Competitiva
+                                        </h4>
+                                        <p className="text-xs text-gray-400 mb-3">En competitivo, los rivales suelen llevar ataques de otros tipos (sin STAB) para cubrir sus debilidades. Cuidado con esto:</p>
+                                        <div className="space-y-2">
+                                            {matchupAnalysis.warnings.map((warn, idx) => (
+                                                <div key={idx} className="bg-black/40 border border-yellow-500/10 rounded-lg p-3 flex flex-col gap-2">
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        <span className="text-white capitalize font-bold">{warn.source}</span>
+                                                        <span className="text-gray-400 text-xs">puede golpear a</span>
+                                                        <span className="text-white capitalize font-bold">{warn.target}</span>
+                                                        <span className={`font-black ml-auto ${warn.multiplier === 4 ? 'text-red-400' : 'text-yellow-400'}`}>x{warn.multiplier}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs">
+                                                        <span className="text-gray-500">Usando tipo:</span>
+                                                        <span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: TYPE_COLORS[warn.coverageType] }}>{TYPE_NAMES_ES[warn.coverageType]}</span>
+                                                    </div>
+                                                    <p className="text-xs text-yellow-500 italic mt-1 bg-yellow-500/5 px-2 py-1 rounded border border-yellow-500/10">
+                                                        "{warn.reason}"
+                                                    </p>
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">El rival no tiene ventaja de STAB contra tu equipo.</p>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
