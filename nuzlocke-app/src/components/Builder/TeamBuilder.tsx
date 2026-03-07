@@ -496,7 +496,7 @@ export const TeamBuilder: React.FC = () => {
                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: TYPE_COLORS[t] }}>
                                                 {TYPE_NAMES_ES[t]}
                                             </span>
-                                            <span className="text-[10px] text-red-400 font-bold">×{analysis.defensiveWeaknesses[t]}</span>
+                                            <span className="text-[10px] text-red-400 font-bold" title={`${analysis.defensiveWeaknesses[t]} Pokémon tienen debilidad a este tipo`}>(Afecta a {analysis.defensiveWeaknesses[t]})</span>
                                         </div>
                                     ))}
                                 </div>
